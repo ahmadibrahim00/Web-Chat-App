@@ -20,6 +20,16 @@ export class LoginFormComponent {
   constructor(private fb: FormBuilder) {}
 
   onLogin() {
-    // À faire
+    const usernameControl = this.loginForm.get('username');
+    const passwordControl = this.loginForm.get('password');
+
+    if (usernameControl && passwordControl && usernameControl.value && passwordControl.value) {
+        const username = usernameControl.value;
+        const password = passwordControl.value;
+
+        const credentials: UserCredentials = { username, password };
+
+        this.login.emit(credentials);
+    }
   }
 }
