@@ -1,6 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { LoginFormComponent } from '../../components/login-form/login-form.component';
 import { UserCredentials } from '../../model/user-credentials';
+import { AuthenticationService } from '../../services/authentication.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login-page',
@@ -10,7 +12,13 @@ import { UserCredentials } from '../../model/user-credentials';
   imports: [LoginFormComponent],
 })
 export class LoginPageComponent {
+  router: Router = inject(Router);
+
+  constructor(private authenticationService: AuthenticationService) {
+  }
+
   onLogin(userCredentials: UserCredentials) {
-    // À faire
+    this.authenticationService.login(userCredentials);
+    this.router.navigate(['/chat']); 
   }
 }
