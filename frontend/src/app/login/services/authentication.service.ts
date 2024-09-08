@@ -14,11 +14,13 @@ export class AuthenticationService {
   }
 
   login(userCredentials: UserCredentials) {
-    // À faire
+    localStorage.setItem(AuthenticationService.KEY, userCredentials.username)
+    this.username.set(userCredentials.username);
   }
 
   logout() {
-    // À faire
+    localStorage.removeItem(AuthenticationService.KEY);
+    this.username.set(null);
   }
 
   getUsername(): Signal<string | null> {
