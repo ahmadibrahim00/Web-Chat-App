@@ -24,8 +24,6 @@ export class LoginFormComponent {
       const username = this.loginForm.get('username')!.value as string;
       const password = this.loginForm.get('password')!.value as string;
       const credentials: UserCredentials = { username, password };
-
-      this.loginForm.reset();
   
       this.login.emit(credentials);
     }
