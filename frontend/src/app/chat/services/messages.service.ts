@@ -8,7 +8,8 @@ export class MessagesService {
   messages = signal<Message[]>([]);
 
   postMessage(message: Message): void {
-    // À faire
+    const currentMessages = this.messages();
+    this.messages.set([...currentMessages, message]);
   }
 
   getMessages(): Signal<Message[]> {
