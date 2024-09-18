@@ -1,4 +1,4 @@
-<form (ngSubmit)="onSubmit()" [formGroup]="messageForm">
+<form (ngSubmit)="onPublishMessage()" [formGroup]="messageForm">
   <input name="message" type="text" formControlName="msg" placeholder="Votre message" />
   <button type="submit">Envoyer</button>
 </form>

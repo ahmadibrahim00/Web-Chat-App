@@ -6,7 +6,7 @@ import { AuthenticationService } from 'src/app/login/services/authentication.ser
 @Component({
   selector: 'app-chat-publier',
   standalone: true,
-  imports: [],
+  imports: [ReactiveFormsModule],
   templateUrl: './chat-publier.component.html',
   styleUrl: './chat-publier.component.css'
 })
