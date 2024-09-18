@@ -1,1 +1,4 @@
-<p>chat-publier works!</p>
+<form (ngSubmit)="onSubmit()" [formGroup]="messageForm">
+  <input name="message" type="text" formControlName="msg" placeholder="Votre message" />
+  <button type="submit">Envoyer</button>
+</form>

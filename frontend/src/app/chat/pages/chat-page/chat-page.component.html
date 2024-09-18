@@ -3,8 +3,5 @@
     <button (click)="onLogout()">Quitter</button>
   </div>
  <app-chat-affichage [messages]="messages()"></app-chat-affichage>    
-   <form (ngSubmit)="onPublishMessage()" [formGroup]="messageForm">
-      <input name="message" type="text" formControlName="msg" />
-      <button type="submit">></button>
-    </form>
-  </div>
+<app-chat-publier (publishMessage)="onPublishMessage($event)"></app-chat-publier>
+</div>
