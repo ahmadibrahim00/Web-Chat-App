@@ -1,6 +1,6 @@
 <div class="chat">
   <div class="chat-logout-button">
-    <button (click)="onLogout()">Quitter</button>
+    <button mat-raised-button color="primary" type="submit" (click)="onLogout()">Quitter</button>
   </div>
  <app-chat-affichage [messages]="messages()"></app-chat-affichage>    
 <app-chat-publier (publishMessage)="onPublishMessage($event)"></app-chat-publier>
