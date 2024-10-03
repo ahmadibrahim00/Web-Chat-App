@@ -1,19 +1,29 @@
-<div>
-  <form class="form" (ngSubmit)="onLogin()" [formGroup]="loginForm">
-    <div>
-      <div>
-        <label
-          >Nom d'usager:
-          <input name="username" type="text" formControlName="username" />
-        </label>
-      </div>
-      <div>
-        <label
-          >Mot de passe:
-          <input name="password" type="password" formControlName="password"
-        /></label>
-      </div>
-    </div>
-    <div><button type="submit">Connexion</button></div>
-  </form>
-</div>
+<form class="form" (ngSubmit)="onLogin()" [formGroup]="loginForm">
+  <div>
+    <!-- Champ Nom d'utilisateur avec Angular Material -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Nom d'usager</mat-label>
+      <input matInput name="username" type="text" formControlName="username" placeholder="Entrez votre nom d'utilisateur" />
+      <mat-error *ngIf="loginForm.get('username').hasError('required')">
+        Nom d'utilisateur requis.
+      </mat-error>
+    </mat-form-field>
+  </div>
+
+  <div>
+    <!-- Champ Mot de passe avec Angular Material -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Mot de passe</mat-label>
+      <input matInput name="password" type="password" formControlName="password" placeholder="Entrez votre mot de passe" />
+      <mat-error *ngIf="loginForm.get('password').hasError('required')">
+        Mot de passe requis.
+      </mat-error>
+    </mat-form-field>
+  </div>
+
+  <!-- Bouton de connexion stylisé avec Angular Material -->
+  <div>
+    <button mat-raised-button color="primary" type="submit">Connexion</button>
+  </div>
+</form>
+
