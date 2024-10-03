@@ -1,4 +1,9 @@
-import { Component, ElementRef, ViewChild, AfterViewChecked } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  ViewChild,
+  AfterViewChecked,
+} from '@angular/core';
 import { Message } from '../../model/message.model';
 import { MessagesService } from '../../services/messages.service';
 import { DatePipe } from '@angular/common';
@@ -8,7 +13,7 @@ import { DatePipe } from '@angular/common';
   standalone: true,
   imports: [DatePipe],
   templateUrl: './messages.component.html',
-  styleUrl: './messages.component.css'
+  styleUrl: './messages.component.css',
 })
 export class MessagesComponent implements AfterViewChecked {
   messages = this.messagesService.getMessages();
@@ -16,9 +21,7 @@ export class MessagesComponent implements AfterViewChecked {
   @ViewChild('chatContainer')
   private chatContainer!: ElementRef;
 
-  constructor(
-    private messagesService: MessagesService
-  ) {}
+  constructor(private messagesService: MessagesService) {}
 
   /** Afficher la date seulement si la date du message précédent est différente du message courant. */
   showDateHeader(messages: Message[] | null, i: number) {
@@ -39,6 +42,7 @@ export class MessagesComponent implements AfterViewChecked {
   }
 
   private scrollToBottom(): void {
-    this.chatContainer.nativeElement.scrollTop = this.chatContainer.nativeElement.scrollHeight;
+    this.chatContainer.nativeElement.scrollTop =
+      this.chatContainer.nativeElement.scrollHeight;
   }
 }

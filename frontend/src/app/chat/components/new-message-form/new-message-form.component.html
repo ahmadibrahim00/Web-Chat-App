@@ -1,8 +1,14 @@
 <div class="new-message-form-container">
   <form (ngSubmit)="onPublishMessage()" [formGroup]="messageForm">
-    <mat-form-field appearance="fill" class="message-input" style="width: 100%;">
+    <mat-form-field appearance="fill" class="message-input" style="width: 100%">
       <mat-label>Envoyer un message</mat-label>
-      <input matInput name="message" type="text" formControlName="msg" placeholder="Tapez votre message...">
+      <input
+        matInput
+        name="message"
+        type="text"
+        formControlName="msg"
+        placeholder="Tapez votre message..."
+      />
       <button mat-icon-button matSuffix type="submit">
         <mat-icon>send</mat-icon>
       </button>
