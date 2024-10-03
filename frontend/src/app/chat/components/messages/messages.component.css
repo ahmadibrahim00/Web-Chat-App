@@ -1,8 +1,12 @@
 .messages {
-  height: 70vh;
-  overflow-y: scroll;
-  text-align: left;
-  padding: 30px;
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 15px;
+  border-radius: 10px;
+
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 p {
