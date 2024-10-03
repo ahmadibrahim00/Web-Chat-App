@@ -10,7 +10,7 @@ import { MatInputModule } from '@angular/material/input';
   templateUrl: './login-form.component.html',
   styleUrls: ['./login-form.component.css'],
   standalone: true,
-  imports: [ReactiveFormsModule, MatFormFieldModule,MatInputModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, MatFormFieldModule,MatInputModule, ReactiveFormsModule],
 })
 export class LoginFormComponent {
   loginForm = this.fb.group({
