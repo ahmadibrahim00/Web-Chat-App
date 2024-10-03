@@ -1,7 +1,17 @@
 form {
   display: flex;
+  width: 100%;
+  align-items: center;
+  border-radius: 0 0 10px 10px; 
 }
 
 input[type='text'] {
   flex: 1;
+  padding: 10px;
+  margin-right: 5px;
+}
+
+button {
+  border: none;
+  background-color: transparent;
 }
