@@ -1,15 +1,10 @@
 <div class="chat">
+  <div class="chat-logout-button">
+    <button mat-flat-button color="primary" type="submit" (click)="onLogout()">
+      Quitter
+    </button>
+  </div>
   <div class="chat-container">
-    <div class="chat-logout-button">
-      <button
-        mat-flat-button
-        color="primary"
-        type="submit"
-        (click)="onLogout()"
-      >
-        Quitter
-      </button>
-    </div>
     <app-messages></app-messages>
     <app-new-message-form></app-new-message-form>
   </div>

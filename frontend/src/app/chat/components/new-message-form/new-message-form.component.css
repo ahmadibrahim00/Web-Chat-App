@@ -1,17 +1,7 @@
-form {
+.message-input {
   display: flex;
-  width: 100%;
-  align-items: center;
-  border-radius: 0 0 10px 10px; 
 }
 
-input[type='text'] {
+input[matInput] {
   flex: 1;
-  padding: 10px;
-  margin-right: 5px;
-}
-
-button {
-  border: none;
-  background-color: transparent;
 }
