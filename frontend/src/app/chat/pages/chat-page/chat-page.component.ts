@@ -1,24 +1,31 @@
-import { Component, inject } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { DatePipe } from '@angular/common';
+import { Component } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
 import { AuthenticationService } from 'src/app/login/services/authentication.service';
-import { Message } from '../../model/message.model';
-import { MessagesService } from '../../services/messages.service';
 import { Router } from '@angular/router';
+import { MessagesComponent } from '../../components/messages/messages.component';
+import { NewMessageFormComponent } from '../../components/new-message-form/new-message-form.component';
+import { MessagesService } from '../../services/messages.service';
+import { Message } from '../../model/message.model';
+import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-chat-page',
   templateUrl: './chat-page.component.html',
   styleUrls: ['./chat-page.component.css'],
   standalone: true,
-  imports: [ReactiveFormsModule, DatePipe],
+  imports: [
+    CommonModule,
+    DatePipe,
+    MessagesComponent,
+    NewMessageFormComponent,
+    ReactiveFormsModule,
+    MatButtonModule,
+  ],
 })
 export class ChatPageComponent {
-  router: Router = inject(Router);
-
   messages = this.messagesService.getMessages();
   username = this.authenticationService.getUsername();
-
   messageForm = this.fb.group({
     msg: '',
   });
@@ -26,25 +33,10 @@ export class ChatPageComponent {
   constructor(
     private fb: FormBuilder,
     private messagesService: MessagesService,
-    private authenticationService: AuthenticationService
+    private authenticationService: AuthenticationService,
+    private router: Router
   ) {}
 
-  onPublishMessage() {
-    if (
-      this.username() &&
-      this.messageForm.valid &&
-      this.messageForm.value.msg
-    ) {
-      this.messagesService.postMessage({
-        text: this.messageForm.value.msg,
-        username: this.username()!,
-        timestamp: Date.now(),
-      });
-    }
-    this.messageForm.reset();
-  }
-
-  /** Afficher la date seulement si la date du message précédent est différente du message courant. */
   showDateHeader(messages: Message[] | null, i: number) {
     if (messages != null) {
       if (i === 0) {

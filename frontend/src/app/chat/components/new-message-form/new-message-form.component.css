@@ -1,0 +1,7 @@
+.message-input {
+  display: flex;
+}
+
+input[matInput] {
+  flex: 1;
+}

@@ -14,11 +14,10 @@ import { Router } from '@angular/router';
 export class LoginPageComponent {
   router: Router = inject(Router);
 
-  constructor(private authenticationService: AuthenticationService) {
-  }
+  constructor(private authenticationService: AuthenticationService) {}
 
   onLogin(userCredentials: UserCredentials) {
     this.authenticationService.login(userCredentials);
-    this.router.navigate(['/chat']); 
+    this.router.navigate(['/chat']);
   }
 }

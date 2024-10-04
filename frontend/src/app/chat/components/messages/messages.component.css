@@ -1,0 +1,11 @@
+.messages {
+  height: 70vh;
+  width: 70vw;
+  overflow-y: scroll;
+  text-align: left;
+  padding: 30px 30px 10px;
+}
+
+p {
+  margin-top: 10px;
+}

@@ -4,35 +4,13 @@
   align-items: center;
 }
 
-.chat-logout-button {
-  align-self: flex-end;
-  margin-bottom: 3px;
-}
-
-.chat-messages {
+.chat-container {
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
-  border-color: gray;
-  border-style: solid;
-  border-width: 1px;
-  width: 60vw;
+  border: 1px solid grey;
 }
 
-.messages {
-  height: 70vh;
-  overflow-y: scroll;
-  text-align: left;
-  padding: 30px;
-}
-
-p {
-  margin: 10px;
-}
-
-form {
-  display: flex;
-}
-
-input[type='text'] {
-  flex: 1;
+.chat-logout-button {
+  align-self: flex-end;
+  margin: 3px;
 }
