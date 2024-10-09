@@ -26,5 +26,8 @@ public class MessageController {
       return messageRepository.getMessages(null);
    }
 
-    
+   @PostMapping(MESSAGES_PATH)
+   public Message createMessage(@RequestBody Message newMessage) {
+      return messageRepository.createMessage(newMessage);
+   }
 }
