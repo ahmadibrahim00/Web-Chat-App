@@ -1,4 +1,4 @@
-package com.inf5190.chat.messages.repository;
+package com.inf5190.chat.mess.repository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,8 +33,15 @@ public class MessageRepository {
     }
 
     public Message createMessage(Message message) {
-        // À faire...
-        return null;
+      // fonctions de la classe AtomicLong
+      Long newId = idGenerator.incrementAndGet();
+      Long currentTime = System.currentTimeMillis();
+
+      Message newMessage = new Message(newId, message.username(), currentTime, message.test());
+      
+      //ajout du nouveau message dans la List des messages
+      messages.add(newMessage);
+      return newMessage;
     }
 
 }
