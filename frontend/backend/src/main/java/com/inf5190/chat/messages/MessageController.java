@@ -20,5 +20,11 @@ public class MessageController {
         this.webSocketManager = webSocketManager;
     }
 
-    // À faire...
+   @GetMapping(MESSAGES_PATH)
+   //Retourne tout les messages
+   public List<Message> getMessages() {
+      return messageRepository.getMessages(null);
+   }
+
+    
 }
