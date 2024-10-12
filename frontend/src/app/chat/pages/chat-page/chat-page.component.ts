@@ -50,8 +50,8 @@ export class ChatPageComponent {
     return false;
   }
 
-  onLogout() {
-    this.authenticationService.logout();
+  async onLogout() {
+    await this.authenticationService.logout();
     this.router.navigate(['/']);
   }
 }
