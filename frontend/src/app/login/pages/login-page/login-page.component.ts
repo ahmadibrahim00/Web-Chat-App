@@ -16,8 +16,8 @@ export class LoginPageComponent {
 
   constructor(private authenticationService: AuthenticationService) {}
 
-  onLogin(userCredentials: UserCredentials) {
-    this.authenticationService.login(userCredentials);
+  async onLogin(userCredentials: UserCredentials) {
+    await this.authenticationService.login(userCredentials);
     this.router.navigate(['/chat']);
   }
 }
