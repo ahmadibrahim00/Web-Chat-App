@@ -37,9 +37,8 @@ public class MessageRepository {
     public Message createMessage(Message message) {
       // fonctions de la classe AtomicLong
       Long newId = idGenerator.incrementAndGet();
-      Long currentTime = System.currentTimeMillis();
 
-      Message newMessage = new Message(newId, message.username(), currentTime, message.text());
+      Message newMessage = new Message(newId, message.text(), message.username(), message.timestamp());
       
       //ajout du nouveau message dans la List des messages
       messages.add(newMessage);
