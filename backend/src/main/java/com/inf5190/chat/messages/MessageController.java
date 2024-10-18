@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.inf5190.chat.messages.model.Message;
@@ -29,9 +30,8 @@ public class MessageController {
     }
 
     @GetMapping(MESSAGES_PATH)
-    //Retourne tous les messages
-    public List<Message> getMessages() {
-        return messageRepository.getMessages(null);
+    public List<Message> getMessages(@RequestParam Long id) {
+        return messageRepository.getMessages(id);
     }
 
     @PostMapping(MESSAGES_PATH)
