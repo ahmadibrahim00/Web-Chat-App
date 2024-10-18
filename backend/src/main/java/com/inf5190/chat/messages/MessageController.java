@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.inf5190.chat.messages.model.Message;
@@ -16,6 +17,7 @@ import com.inf5190.chat.websocket.WebSocketManager;
  */
 @RestController
 public class MessageController {
+
     public static final String MESSAGES_PATH = "/messages";
 
     private final MessageRepository messageRepository;
@@ -27,14 +29,17 @@ public class MessageController {
         this.webSocketManager = webSocketManager;
     }
 
-   @GetMapping(MESSAGES_PATH)
-   //Retourne tous les messages
-   public List<Message> getMessages() {
-      return messageRepository.getMessages(null);
-   }
+    @GetMapping(MESSAGES_PATH)
+    public List<Message> getMessages(@RequestParam Long id) {
+        return messageRepository.getMessages(id);
+    }
 
-   @PostMapping(MESSAGES_PATH)
-   public Message createMessage(@RequestBody Message newMessage) {
-      return messageRepository.createMessage(newMessage);
-   }
+    @PostMapping(MESSAGES_PATH)
+    public Message createMessage(@RequestBody Message newMessage) {
+        Message message = messageRepository.createMessage(newMessage);
+        if (message != null) {
+            webSocketManager.notifySessions();
+        }
+        return message;
+    }
 }
