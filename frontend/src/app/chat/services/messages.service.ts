@@ -1,6 +1,6 @@
 import { Injectable, Signal, signal } from '@angular/core';
 import { Message } from '../model/message.model';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from 'src/environments/environment.development';
 import { firstValueFrom } from 'rxjs';
 
@@ -9,11 +9,11 @@ import { firstValueFrom } from 'rxjs';
 })
 export class MessagesService {
   messages = signal<Message[]>([]);
+  lastId = -1;
 
   constructor(private httpClient: HttpClient) {}
 
   async postMessage(message: Message): Promise<void> {
-    const currentMessages = this.messages();
     await firstValueFrom(
       this.httpClient.post<Message>(
         `${environment.backendURL}/messages`,
@@ -21,8 +21,7 @@ export class MessagesService {
         { withCredentials: true }
       )
     ).then((newMessage) => {
-      this.messages.set([...currentMessages, newMessage]);
-      console.log(newMessage);
+      this.lastId = newMessage.id;
     });
   }
 
@@ -31,12 +30,16 @@ export class MessagesService {
   }
 
   async fetchMessages(): Promise<void> {
+    const params = new HttpParams().set('id', this.lastId);
     await firstValueFrom(
       this.httpClient.get<Message[]>(`${environment.backendURL}/messages`, {
+        params,
         withCredentials: true,
       })
-    ).then((messages) => {
-      this.messages.set(messages);
+    ).then((newMessages) => {
+      const currentMessages = this.messages();
+      this.messages.set([...currentMessages, ...newMessages]);
+      this.lastId = this.messages().length - 1;
     });
   }
 }
