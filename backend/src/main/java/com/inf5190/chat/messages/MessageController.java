@@ -16,6 +16,7 @@ import com.inf5190.chat.websocket.WebSocketManager;
  */
 @RestController
 public class MessageController {
+
     public static final String MESSAGES_PATH = "/messages";
 
     private final MessageRepository messageRepository;
@@ -27,14 +28,18 @@ public class MessageController {
         this.webSocketManager = webSocketManager;
     }
 
-   @GetMapping(MESSAGES_PATH)
-   //Retourne tous les messages
-   public List<Message> getMessages() {
-      return messageRepository.getMessages(null);
-   }
+    @GetMapping(MESSAGES_PATH)
+    //Retourne tous les messages
+    public List<Message> getMessages() {
+        return messageRepository.getMessages(null);
+    }
 
-   @PostMapping(MESSAGES_PATH)
-   public Message createMessage(@RequestBody Message newMessage) {
-      return messageRepository.createMessage(newMessage);
-   }
+    @PostMapping(MESSAGES_PATH)
+    public Message createMessage(@RequestBody Message newMessage) {
+        Message message = messageRepository.createMessage(newMessage);
+        if (message != null) {
+            webSocketManager.notifySessions();
+        }
+        return message;
+    }
 }
