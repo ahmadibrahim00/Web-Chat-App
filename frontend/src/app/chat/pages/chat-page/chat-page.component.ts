@@ -1,13 +1,14 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { AuthenticationService } from 'src/app/login/services/authentication.service';
 import { Router } from '@angular/router';
 import { MessagesComponent } from '../../components/messages/messages.component';
 import { NewMessageFormComponent } from '../../components/new-message-form/new-message-form.component';
 import { MessagesService } from '../../services/messages.service';
-import { Message } from '../../model/message.model';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { Message } from '../../model/message.model';
+import { interval, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-chat-page',
@@ -23,9 +24,10 @@ import { MatButtonModule } from '@angular/material/button';
     MatButtonModule,
   ],
 })
-export class ChatPageComponent {
+export class ChatPageComponent implements OnInit, OnDestroy {
   messages = this.messagesService.getMessages();
   username = this.authenticationService.getUsername();
+  private pollingSubscription: Subscription = new Subscription();
   messageForm = this.fb.group({
     msg: '',
   });
@@ -36,6 +38,15 @@ export class ChatPageComponent {
     private authenticationService: AuthenticationService,
     private router: Router
   ) {}
+
+  // Lorsque l'on change de page va chercher les messages
+  // et à chaque 3 secondes charge les nouveaux messages
+  ngOnInit() {
+    this.messagesService.fetchMessages();
+    this.pollingSubscription = interval(3000).subscribe(() =>
+      this.messagesService.fetchMessages()
+    );
+  }
 
   showDateHeader(messages: Message[] | null, i: number) {
     if (messages != null) {
@@ -53,5 +64,12 @@ export class ChatPageComponent {
   async onLogout() {
     await this.authenticationService.logout();
     this.router.navigate(['/']);
+  }
+
+  ngOnDestroy(): void {
+    // Quand le componenet n'est plus utilisé, unsu
+    if (this.pollingSubscription) {
+      this.pollingSubscription.unsubscribe();
+    }
   }
 }

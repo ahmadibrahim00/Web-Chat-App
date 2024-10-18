@@ -41,6 +41,7 @@ export class NewMessageFormComponent {
       this.messageForm.value.msg
     ) {
       this.messagesService.postMessage({
+        id: -1,
         text: this.messageForm.value.msg,
         username: this.username()!,
         timestamp: Date.now(),
