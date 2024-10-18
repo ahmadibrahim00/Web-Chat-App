@@ -29,4 +29,14 @@ export class MessagesService {
   getMessages(): Signal<Message[]> {
     return this.messages;
   }
+
+  async fetchMessages(): Promise<void> {
+    await firstValueFrom(
+      this.httpClient.get<Message[]>(`${environment.backendURL}/messages`, {
+        withCredentials: true,
+      })
+    ).then((messages) => {
+      this.messages.set(messages);
+    });
+  }
 }
