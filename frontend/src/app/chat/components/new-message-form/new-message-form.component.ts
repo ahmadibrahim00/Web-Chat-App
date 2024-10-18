@@ -34,13 +34,13 @@ export class NewMessageFormComponent {
     private authenticationService: AuthenticationService
   ) {}
 
-  onPublishMessage() {
+  async onPublishMessage() {
     if (
       this.username() &&
       this.messageForm.valid &&
       this.messageForm.value.msg
     ) {
-      this.messagesService.postMessage({
+      await this.messagesService.postMessage({
         id: -1,
         text: this.messageForm.value.msg,
         username: this.username()!,
