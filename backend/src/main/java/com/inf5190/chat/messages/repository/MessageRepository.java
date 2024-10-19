@@ -20,19 +20,13 @@ public class MessageRepository {
     private final AtomicLong idGenerator = new AtomicLong(-1);
 
     public List<Message> getMessages(Long fromId) {
-        List<Message> currentMessages = messages;
-        if (fromId == -1 || fromId == null) {
-            return new ArrayList<>(currentMessages);
+        if (fromId == null) {
+            return new ArrayList<>(messages);
+        } else {
+            return messages.stream()
+                    .filter(message -> message.id() > fromId)
+                    .toList();
         }
-
-        List<Message> filtreMessage = new ArrayList<>();
-        for (Message message : currentMessages) {
-            // on vas récupérer les nouveaux message, donc ceux suivant le id
-            if (message.id() > fromId) {
-                filtreMessage.add(message);
-            }
-        }
-        return filtreMessage;
     }
 
     public Message createMessage(Message message) {

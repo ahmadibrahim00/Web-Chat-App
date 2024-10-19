@@ -20,9 +20,7 @@ export class MessagesService {
         message,
         { withCredentials: true }
       )
-    ).then((newMessage) => {
-      this.lastId = newMessage.id;
-    });
+    );
   }
 
   getMessages(): Signal<Message[]> {
@@ -37,9 +35,11 @@ export class MessagesService {
         withCredentials: true,
       })
     ).then((newMessages) => {
-      const currentMessages = this.messages();
-      this.messages.set([...currentMessages, ...newMessages]);
-      this.lastId = this.messages().length - 1;
+      if (newMessages.length > 0) {
+        const currentMessages = this.messages();
+        this.messages.set([...currentMessages, ...newMessages]);
+        this.lastId = newMessages[newMessages.length - 1].id;
+      }
     });
   }
 }
