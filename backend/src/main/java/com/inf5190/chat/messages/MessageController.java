@@ -2,6 +2,8 @@ package com.inf5190.chat.messages;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,15 +32,17 @@ public class MessageController {
     }
 
     @GetMapping(MESSAGES_PATH)
-    public List<Message> getMessages(@RequestParam Long id) {
-        return messageRepository.getMessages(id);
+    public ResponseEntity<List<Message>> getMessages(@RequestParam Long id) {
+        return ResponseEntity.ok().body(messageRepository.getMessages(id));
     }
 
     @PostMapping(MESSAGES_PATH)
-    public void createMessage(@RequestBody Message newMessage) {
+    public ResponseEntity<String> createMessage(@RequestBody Message newMessage) {
         Message message = messageRepository.createMessage(newMessage);
         if (message != null) {
             webSocketManager.notifySessions();
+            return ResponseEntity.status(HttpStatus.CREATED).build();
         }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 }
