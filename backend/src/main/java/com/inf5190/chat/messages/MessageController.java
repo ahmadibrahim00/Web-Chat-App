@@ -35,11 +35,10 @@ public class MessageController {
     }
 
     @PostMapping(MESSAGES_PATH)
-    public Message createMessage(@RequestBody Message newMessage) {
+    public void createMessage(@RequestBody Message newMessage) {
         Message message = messageRepository.createMessage(newMessage);
         if (message != null) {
             webSocketManager.notifySessions();
         }
-        return message;
     }
 }
