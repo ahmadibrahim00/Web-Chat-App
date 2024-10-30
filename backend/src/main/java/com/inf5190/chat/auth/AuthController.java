@@ -13,6 +13,10 @@ import com.inf5190.chat.auth.model.LoginRequest;
 import com.inf5190.chat.auth.model.LoginResponse;
 import com.inf5190.chat.auth.session.SessionData;
 import com.inf5190.chat.auth.session.SessionManager;
+import com.inf5190.chat.auth.repository.UserAccountRepository;
+import com.inf5190.chat.auth.repository.FirestoreUserAccount;
+import java.util.concurrent.ExecutionException;
+
 
 import jakarta.servlet.http.Cookie;
 
@@ -26,13 +30,22 @@ public class AuthController {
    public static final String SESSION_ID_COOKIE_NAME = "sid";
 
    private final SessionManager sessionManager;
+   private final UserAccountRepository userAccountRepository;
 
-   public AuthController(SessionManager sessionManager) {
+   public AuthController(SessionManager sessionManager, UserAccountRepository userAccountRepository) {
       this.sessionManager = sessionManager;
+      this.userAccountRepository = userAccountRepository;
    }
 
    @PostMapping(AUTH_LOGIN_PATH)
-   public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
+   public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) throws InterruptedException, ExecutionException {
+      String username = loginRequest.username();
+      String password = loginRequest.password();
+      FirestoreUserAccount userAccount = userAccountRepository.getUserAccount(username);
+      if (userAccount == null) {
+         userAccount = new FirestoreUserAccount(username, password);
+         userAccountRepository.createUserAccount(userAccount);
+      }
       SessionData SD = new SessionData(loginRequest.username());
       String sessionId = sessionManager.addSession(SD);
 
