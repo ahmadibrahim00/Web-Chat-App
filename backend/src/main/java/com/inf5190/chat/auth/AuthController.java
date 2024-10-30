@@ -4,10 +4,13 @@ package com.inf5190.chat.auth;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.inf5190.chat.auth.model.LoginRequest;
 import com.inf5190.chat.auth.model.LoginResponse;
@@ -31,21 +34,30 @@ public class AuthController {
 
    private final SessionManager sessionManager;
    private final UserAccountRepository userAccountRepository;
+   private final PasswordEncoder passwordEncoder;
 
-   public AuthController(SessionManager sessionManager, UserAccountRepository userAccountRepository) {
+   public AuthController(SessionManager sessionManager, UserAccountRepository userAccountRepository, PasswordEncoder passwordEncoder) {
       this.sessionManager = sessionManager;
       this.userAccountRepository = userAccountRepository;
+      this.passwordEncoder = passwordEncoder;
    }
-
    @PostMapping(AUTH_LOGIN_PATH)
    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) throws InterruptedException, ExecutionException {
       String username = loginRequest.username();
-      String password = loginRequest.password();
+      String rawPassword = loginRequest.password();
       FirestoreUserAccount userAccount = userAccountRepository.getUserAccount(username);
       if (userAccount == null) {
-         userAccount = new FirestoreUserAccount(username, password);
+
+         String encodedPassword = passwordEncoder.encode(rawPassword);
+         userAccount = new FirestoreUserAccount(username, encodedPassword);
          userAccountRepository.createUserAccount(userAccount);
+      } else {
+
+         if(!passwordEncoder.matches(rawPassword, userAccount.getEncodedPassword())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+         }
       }
+
       SessionData SD = new SessionData(loginRequest.username());
       String sessionId = sessionManager.addSession(SD);
 
