@@ -8,6 +8,8 @@ import com.google.cloud.firestore.Firestore;
 import com.google.firebase.cloud.FirestoreClient;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.WriteResult;
+import com.google.cloud.firestore.DocumentReference;
+import com.google.cloud.firestore.DocumentSnapshot;
 
 @Repository
 public class UserAccountRepository {
@@ -17,7 +19,13 @@ public class UserAccountRepository {
 
     public FirestoreUserAccount getUserAccount(String username) throws
             InterruptedException, ExecutionException {
-        throw new UnsupportedOperationException("A faire");
+               DocumentReference docRef = firestore.collection(COLLECTION_NAME).document(username);
+               DocumentSnapshot documentSnapshot = docRef.get().get();
+
+               if (!documentSnapshot.exists()) {
+                  return null;
+               }
+               return documentSnapshot.toObject(FirestoreUserAccount.class);
     }
 
     public void createUserAccount(FirestoreUserAccount userAccount) throws
