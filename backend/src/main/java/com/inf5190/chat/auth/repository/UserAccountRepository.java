@@ -6,6 +6,8 @@ import org.springframework.stereotype.Repository;
 
 import com.google.cloud.firestore.Firestore;
 import com.google.firebase.cloud.FirestoreClient;
+import com.google.cloud.firestore.DocumentReference;
+import com.google.cloud.firestore.WriteResult;
 
 @Repository
 public class UserAccountRepository {
@@ -20,6 +22,8 @@ public class UserAccountRepository {
 
     public void createUserAccount(FirestoreUserAccount userAccount) throws
             InterruptedException, ExecutionException {
-        throw new UnsupportedOperationException("A faire");
+               DocumentReference docRef = firestore.collection(COLLECTION_NAME).document(userAccount.getUsername());
+               WriteResult result = docRef.set(userAccount).get();
+               System.out.println("Compte crée avec succès");
     }
 }
