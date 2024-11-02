@@ -43,14 +43,24 @@ public class MessageRepository {
         }
     }
 
-    public Message createMessage(Message message) {
-        // fonctions de la classe AtomicLong
-        Long newId = idGenerator.incrementAndGet();
-        Message newMessage = new Message(newId, message.text(), message.username(), message.timestamp());
+    public Message createMessage(Message message) throws InterruptedException, ExecutionException{
+        // référence vers la collection messages dans firestore
+        CollectionReference collectionMessage = firestore.collection("messages");
+        FirestoreMessage firestoreMessage = new FirestoreMessage(
+            messages.username(),
+            Timestamp.now(),
+            message.text()
+        );
 
-        //ajout du nouveau message dans la List des messages
-        messages.add(newMessage);
-        return newMessage;
+        DocumentReference docRef = messagesCollection.document();
+        WriteResult writeResult = docRef.set(firestoreMessage).get();
+
+        return new Message(
+            docRef.getId(),
+            firestoreMessage.text(),
+            firestoreMessage.username(),
+            firestoreMessage.timestamp()
+        );
     }
 
 }
