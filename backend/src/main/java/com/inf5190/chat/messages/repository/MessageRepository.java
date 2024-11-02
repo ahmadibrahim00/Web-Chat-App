@@ -4,8 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.google.cloud.Timestamp;
+import com.google.cloud.firestore.CollectionReference;
+import com.google.cloud.firestore.DocumentReference;
+import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.WriteResult;
+import com.google.firebase.cloud.FirestoreClient;
+import com.inf5190.chat.messages.model.Message;
+import com.inf5190.chat.messages.repository.FirestoreMessage;
 import org.springframework.stereotype.Repository;
 
+import java.util.concurrent.ExecutionException;
 import com.inf5190.chat.messages.model.Message;
 
 /**
@@ -16,8 +25,13 @@ import com.inf5190.chat.messages.model.Message;
 @Repository
 public class MessageRepository {
 
+    private final Firestore firestore;
     private final List<Message> messages = new ArrayList<>();
     private final AtomicLong idGenerator = new AtomicLong(-1);
+
+    public MessageRepository(){
+        this.firestore = FirestoreClient.getFirestore();
+    }
 
     public List<Message> getMessages(Long fromId) {
         if (fromId == null) {
