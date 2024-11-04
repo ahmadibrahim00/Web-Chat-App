@@ -13,54 +13,86 @@ import com.google.firebase.cloud.FirestoreClient;
 import com.inf5190.chat.messages.model.Message;
 import com.inf5190.chat.messages.repository.FirestoreMessage;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
+
+import com.google.cloud.firestore.Query;
+import com.google.cloud.firestore.QuerySnapshot;
+import com.google.cloud.firestore.DocumentSnapshot;
 
 import java.util.concurrent.ExecutionException;
 import com.inf5190.chat.messages.model.Message;
+import com.inf5190.chat.websocket.WebSocketManager;
+
 
 /**
  * Classe qui gère la persistence des messages.
  *
- * En mémoire pour le moment.
  */
 @Repository
 public class MessageRepository {
 
     private final Firestore firestore;
     private final List<Message> messages = new ArrayList<>();
-    private final AtomicLong idGenerator = new AtomicLong(-1);
+    private final WebSocketManager webSocketManager;
 
-    public MessageRepository(){
+    public MessageRepository(WebSocketManager webSocketManager){
         this.firestore = FirestoreClient.getFirestore();
+        this.webSocketManager = webSocketManager;
     }
 
-    public List<Message> getMessages(Long fromId) {
-        if (fromId == null) {
-            return new ArrayList<>(messages);
-        } else {
-            return messages.stream()
-                    .filter(message -> message.id() > fromId)
-                    .toList();
+public List<Message> getMessages(String fromId) throws InterruptedException, ExecutionException {
+    Query query = firestore.collection("messages")
+        .orderBy("timestamp", Query.Direction.DESCENDING);
+
+    if (fromId != null && !fromId.trim().isEmpty()) {
+        DocumentSnapshot fromDoc = firestore.collection("messages")
+            .document(fromId)
+            .get()
+            .get();
+        if (fromDoc.exists()) {
+            query = query.startAfter(fromDoc);
         }
     }
 
-    public Message createMessage(Message message) throws InterruptedException, ExecutionException{
-        // référence vers la collection messages dans firestore
-        CollectionReference collectionMessage = firestore.collection("messages");
+    query = query.limit(1000);
+    List<Message> messages = new ArrayList<>();
+    QuerySnapshot querySnapshot = query.get().get();
+    
+    for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+        FirestoreMessage firestoreMessage = doc.toObject(FirestoreMessage.class);
+        messages.add(new Message(
+            doc.getId(),
+            firestoreMessage.getText(),
+            firestoreMessage.getUsername(),
+            firestoreMessage.getTimestamp().getSeconds() * 1000
+        ));
+    }
+
+    return messages;
+}
+
+    public Message createMessage(Message message, String authenticateUser) throws InterruptedException, ExecutionException {
+        if (!authenticateUser.equals(message.username())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Mauvais Utilisateur");
+        }
+
         FirestoreMessage firestoreMessage = new FirestoreMessage(
-            messages.username(),
+            message.username(),
             Timestamp.now(),
             message.text()
         );
 
-        DocumentReference docRef = messagesCollection.document();
-        WriteResult writeResult = docRef.set(firestoreMessage).get();
+        DocumentReference docRef = firestore.collection("messages").document();
+        WriteResult writeRes = docRef.set(firestoreMessage).get();
+
+        this.webSocketManager.notifySessions();
 
         return new Message(
             docRef.getId(),
-            firestoreMessage.text(),
-            firestoreMessage.username(),
-            firestoreMessage.timestamp()
+            firestoreMessage.getText(),
+            firestoreMessage.getUsername(),
+            firestoreMessage.getTimestamp().getSeconds() * 1000
         );
     }
-
 }
