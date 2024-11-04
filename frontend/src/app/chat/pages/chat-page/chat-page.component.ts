@@ -41,8 +41,6 @@ export class ChatPageComponent implements OnInit, OnDestroy {
     private websocketService: WebSocketService
   ) {}
 
-  // Lorsque l'on change de page va chercher les messages
-  // et à chaque 3 secondes charge les nouveaux messages
   async ngOnInit() {
     await this.messagesService.fetchMessages(false);
     this.wsSubscription = this.websocketService.connect().subscribe((event) => {
@@ -70,8 +68,7 @@ export class ChatPageComponent implements OnInit, OnDestroy {
     this.router.navigate(['/']);
   }
 
-  ngOnDestroy(): void {
-    // Quand le componenet n'est plus utilisé, unsub
+  ngOnDestroy(): void { 
     if (this.wsSubscription) {
       this.wsSubscription.unsubscribe();
     }
