@@ -1,4 +1,5 @@
 package com.inf5190.chat.messages.model;
+import com.google.cloud.Timestamp;
 
 /**
  * Représente un message
