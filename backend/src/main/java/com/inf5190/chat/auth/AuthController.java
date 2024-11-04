@@ -76,9 +76,7 @@ public class AuthController {
 
    @PostMapping(AUTH_LOGOUT_PATH)
    public ResponseEntity<String> logout(@CookieValue(SESSION_ID_COOKIE_NAME) Cookie sessionCookie) {
-      if (sessionCookie != null) {
-         sessionManager.removeSession(SESSION_ID_COOKIE_NAME);
-      }
+
       ResponseCookie deleteCookie = ResponseCookie.from("sid", "")
             .httpOnly(true)
             .path("/")
