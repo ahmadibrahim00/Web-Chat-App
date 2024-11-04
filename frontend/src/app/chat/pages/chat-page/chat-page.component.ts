@@ -44,10 +44,10 @@ export class ChatPageComponent implements OnInit, OnDestroy {
   // Lorsque l'on change de page va chercher les messages
   // et à chaque 3 secondes charge les nouveaux messages
   async ngOnInit() {
-    await this.messagesService.fetchMessages();
+    await this.messagesService.fetchMessages(false);
     this.wsSubscription = this.websocketService.connect().subscribe((event) => {
       if (event == 'notif') {
-        this.messagesService.fetchMessages();
+        this.messagesService.fetchMessages(false);
       }
     });
   }
