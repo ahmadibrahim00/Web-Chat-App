@@ -57,10 +57,9 @@ export class ChatPageComponent implements OnInit, OnDestroy {
   async onPublishMessage(message: string) {
     if (this.username() && message) {
       await this.messagesService.postMessage({
-        id: '',
         text: message,
         username: this.username()!,
-        timestamp: new Date().getTime(),
+        imageData: null,
       });
     }
   }

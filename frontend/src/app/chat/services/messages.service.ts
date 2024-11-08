@@ -1,5 +1,5 @@
 import { effect, Injectable, Signal, signal } from '@angular/core';
-import { Message } from '../model/message.model';
+import { Message, NewMessageRequest } from '../model/message.model';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from 'src/environments/environment';
@@ -20,7 +20,7 @@ export class MessagesService {
     });
   }
 
-  async postMessage(message: Message): Promise<Message> {
+  async postMessage(message: NewMessageRequest): Promise<Message> {
     return firstValueFrom(
       this.httpClient.post<Message>(
         `${environment.backendURL}/messages`,
