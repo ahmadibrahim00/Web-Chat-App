@@ -4,3 +4,7 @@
   text-align: left;
   padding: 30px;
 }
+
+img {
+  max-width: 100%;
+}
