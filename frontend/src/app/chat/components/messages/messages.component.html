@@ -6,7 +6,12 @@
       {{ m.timestamp | date }}
     </h3>
     }
-    <p>[{{ m.timestamp | date : 'hh:mm' }}] {{ m.username }} : {{ m.text }}</p>
+    <p>
+      [{{ m.timestamp | date : 'hh:mm' }}] {{ m.username }} : {{ m.text }}
+      @if(m.imageUrl) {
+      <img src="{{ m.imageUrl }}" alt="Erreur affichage de l'image" />
+      }
+    </p>
   </div>
   }
 </div>
