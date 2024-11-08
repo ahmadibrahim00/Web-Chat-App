@@ -1,6 +1,7 @@
 package com.inf5190.chat.messages.repository;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -16,7 +17,6 @@ import com.google.cloud.firestore.Query;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.firebase.cloud.FirestoreClient;
 import com.inf5190.chat.messages.model.Message;
-import com.inf5190.chat.websocket.WebSocketManager;
 
 /**
  * Classe qui gère la persistence des messages.
@@ -26,28 +26,40 @@ import com.inf5190.chat.websocket.WebSocketManager;
 public class MessageRepository {
 
     private final Firestore firestore;
-    private final WebSocketManager webSocketManager;
 
-    public MessageRepository(WebSocketManager webSocketManager) {
+    public MessageRepository() {
         this.firestore = FirestoreClient.getFirestore();
-        this.webSocketManager = webSocketManager;
     }
 
     public List<Message> getMessages(String fromId) throws InterruptedException, ExecutionException {
-        Query query = firestore.collection("messages")
-                .orderBy("timestamp", Query.Direction.DESCENDING);
+        // Commencer par une requête qui ordonne les messages par timestamp de manière croissante ou décroissante
+        Query query;
 
-        if (fromId != null && !fromId.trim().isEmpty()) {
+        if (fromId == null || fromId.isEmpty()) {
+            // Si fromId est null, on récupère les 20 derniers messages en ordre décroissant
+            query = firestore.collection("messages")
+                    .orderBy("timestamp", Query.Direction.DESCENDING)
+                    .limit(20);
+        } else {
+            // Si fromId est spécifié, on commence après ce message en ordre croissant
             DocumentSnapshot fromDoc = firestore.collection("messages")
                     .document(fromId)
                     .get()
                     .get();
+
             if (fromDoc.exists()) {
-                query = query.startAfter(fromDoc);
+                // Commence après le message trouvé avec fromId
+                query = firestore.collection("messages")
+                        .orderBy("timestamp", Query.Direction.ASCENDING)
+                        .startAfter(fromDoc)
+                        .limit(20);
+            } else {
+                // Si fromId n'est pas trouvé, on peut gérer cela comme une erreur ou un retour vide
+                throw new IllegalArgumentException("Le message avec l'id " + fromId + " n'a pas été trouvé.");
             }
         }
 
-        query = query.limit(20);
+        // Exécution de la requête et récupération des résultats
         List<Message> messages = new ArrayList<>();
         QuerySnapshot querySnapshot = query.get().get();
 
@@ -59,6 +71,12 @@ public class MessageRepository {
                     firestoreMessage.getUsername(),
                     firestoreMessage.getTimestamp().getSeconds() * 1000
             ));
+        }
+
+        // Si on est dans le cas de la première récupération (fromId == null), les messages sont déjà triés du plus récent au plus ancien
+        if (fromId == null || fromId.isEmpty()) {
+            // On inverse les messages pour avoir les plus anciens en haut
+            Collections.reverse(messages);
         }
 
         return messages;
@@ -77,8 +95,6 @@ public class MessageRepository {
 
         DocumentReference docRef = firestore.collection("messages").document();
         docRef.set(firestoreMessage).get();
-
-        this.webSocketManager.notifySessions();
 
         return new Message(
                 docRef.getId(),
