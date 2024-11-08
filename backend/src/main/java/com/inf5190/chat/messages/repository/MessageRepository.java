@@ -15,9 +15,15 @@ import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.Query;
 import com.google.cloud.firestore.QuerySnapshot;
+import com.google.cloud.storage.Bucket;
+import com.google.cloud.storage.Bucket.BlobTargetOption;
+import com.google.cloud.storage.Storage.PredefinedAcl;
 import com.google.firebase.cloud.FirestoreClient;
+import com.google.firebase.cloud.StorageClient;
 import com.inf5190.chat.messages.model.Message;
 import com.inf5190.chat.messages.model.NewMessageRequest;
+
+import io.jsonwebtoken.io.Decoders;
 
 /**
  * Classe qui gère la persistence des messages.
@@ -27,6 +33,7 @@ import com.inf5190.chat.messages.model.NewMessageRequest;
 public class MessageRepository {
 
     private final Firestore firestore;
+    private final String BUCKET_NAME = "inf5190-chat-5893c.appspot.com";
 
     public MessageRepository() {
         this.firestore = FirestoreClient.getFirestore();
@@ -77,19 +84,35 @@ public class MessageRepository {
         return messages;
     }
 
-    public Message createMessage(NewMessageRequest message, String authenticateUser) throws InterruptedException, ExecutionException {
-        if (!authenticateUser.equals(message.username())) {
+    public Message createMessage(NewMessageRequest messageRequest, String authenticateUser) throws InterruptedException, ExecutionException {
+        if (!authenticateUser.equals(messageRequest.username())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Mauvais Utilisateur");
         }
 
+        DocumentReference docRef = firestore.collection("messages").document();
+        String imageUrl = null;
+
+        // Handle image data if present
+        if (messageRequest.imageData() != null) {
+            Bucket bucket = StorageClient.getInstance().bucket(BUCKET_NAME);
+            String path = String.format("images/%s.%s", docRef.getId(),
+                    messageRequest.imageData().type());
+
+            bucket.create(path, Decoders.BASE64.decode(messageRequest.imageData().data()),
+                    BlobTargetOption.predefinedAcl(PredefinedAcl.PUBLIC_READ));
+
+            imageUrl = String.format("https://storage.googleapis.com/%s/%s", BUCKET_NAME, path);
+        }
+
+        System.out.println(messageRequest);
+
         FirestoreMessage firestoreMessage = new FirestoreMessage(
-                message.username(),
+                messageRequest.username(),
                 Timestamp.now(),
-                message.text(),
-                null
+                messageRequest.text(),
+                imageUrl
         );
 
-        DocumentReference docRef = firestore.collection("messages").document();
         docRef.set(firestoreMessage).get();
 
         return new Message(
