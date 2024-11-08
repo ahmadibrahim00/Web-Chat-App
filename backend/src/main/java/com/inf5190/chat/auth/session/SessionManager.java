@@ -1,21 +1,22 @@
 package com.inf5190.chat.auth.session;
 
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.JwtParser;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
-import io.jsonwebtoken.io.Encoders;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.crypto.SecretKey;
 
 import org.springframework.stereotype.Repository;
-import java.util.Date;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.UUID;
+
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.JwtParser;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.io.Encoders;
+import io.jsonwebtoken.security.Keys;
 
 @Repository
 public class SessionManager {
@@ -31,28 +32,28 @@ public class SessionManager {
     }
 
     public SessionManager() {
-       this.secretKey= Keys.hmacShaKeyFor(Decoders.BASE64.decode(SECRET_KEY_BASE64));
-       this.jwtParser= Jwts.parser().verifyWith(this.secretKey).build();
-   }
+        this.secretKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(SECRET_KEY_BASE64));
+        this.jwtParser = Jwts.parser().verifyWith(this.secretKey).build();
+    }
 
     public String addSession(SessionData authData) {
-      Instant now = Instant.now();
+        Instant now = Instant.now();
 
         return Jwts.builder()
-            .setSubject(authData.username())            
-            .setAudience("chat-application")                  
-            .setIssuedAt(Date.from(now))                     
-            .setExpiration(Date.from(now.plus(2, ChronoUnit.HOURS)))
-            .signWith(secretKey, SignatureAlgorithm.HS256)  
-            .compact();
+                .setSubject(authData.username())
+                .setAudience("chat-application")
+                .setIssuedAt(Date.from(now))
+                .setExpiration(Date.from(now.plus(2, ChronoUnit.HOURS)))
+                .signWith(secretKey, SignatureAlgorithm.HS256)
+                .compact();
     }
 
     public SessionData getSession(String sessionId) {
         try {
 
             String username = jwtParser.parseClaimsJws(sessionId)
-                .getBody()
-                .getSubject(); 
+                    .getBody()
+                    .getSubject();
 
             return new SessionData(username);
 
@@ -62,5 +63,3 @@ public class SessionManager {
       }
    }
 }
-
-
