@@ -11,6 +11,8 @@ import {
   WebSocketEvent,
   WebSocketService,
 } from '../../services/websocket.service';
+import { FileReaderService } from '../../services/file-reader.service';
+import { ChatImageData } from '../../model/message.model';
 
 @Component({
   selector: 'app-chat-page',
@@ -30,12 +32,15 @@ export class ChatPageComponent implements OnInit, OnDestroy {
 
   notifications$: Observable<WebSocketEvent> | null = null;
   notificationsSubscription: Subscription | null = null;
+  imageData: ChatImageData | null = null;
+  private imageReadPromise: Promise<void> | null = null; // Promise to track image loading
 
   constructor(
     private messagesService: MessagesService,
     private authenticationService: AuthenticationService,
     private webSocketService: WebSocketService,
-    private router: Router
+    private router: Router,
+    private fileReaderService: FileReaderService
   ) {}
 
   ngOnInit() {
@@ -54,12 +59,33 @@ export class ChatPageComponent implements OnInit, OnDestroy {
     this.webSocketService.disconnect();
   }
 
-  async onPublishMessage(message: string) {
-    if (this.username() && message) {
+  selectedImage(file: File | null) {
+    if (file) {
+      this.imageReadPromise = this.fileReaderService
+        .readFile(file)
+        .then((data) => {
+          this.imageData = data;
+        });
+    } else {
+      this.imageData = null;
+      this.imageReadPromise = Promise.resolve();
+    }
+  }
+
+  async onPublishMessage({ msg, file }: { msg: string; file: File | null }) {
+    let imageData: ChatImageData | null = null;
+
+    // If a file is present, read it as base64 using FileReaderService
+    if (file) {
+      imageData = await this.fileReaderService.readFile(file);
+    }
+
+    // Send the message with or without the image data
+    if (this.username()) {
       await this.messagesService.postMessage({
-        text: message,
+        text: msg,
         username: this.username()!,
-        imageData: null,
+        imageData,
       });
     }
   }
