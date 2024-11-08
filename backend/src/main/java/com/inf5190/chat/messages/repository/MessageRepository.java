@@ -33,7 +33,7 @@ import io.jsonwebtoken.io.Decoders;
 public class MessageRepository {
 
     private final Firestore firestore;
-    private final String BUCKET_NAME = "inf5190-chat-5893c.appspot.com";
+    private final String BUCKET_NAME = "inf5190-chat-5893c.appspot.com"; //Mettre son bucket_name
 
     public MessageRepository() {
         this.firestore = FirestoreClient.getFirestore();
@@ -103,8 +103,6 @@ public class MessageRepository {
 
             imageUrl = String.format("https://storage.googleapis.com/%s/%s", BUCKET_NAME, path);
         }
-
-        System.out.println(messageRequest);
 
         FirestoreMessage firestoreMessage = new FirestoreMessage(
                 messageRequest.username(),
