@@ -1,77 +1,56 @@
-import { Injectable, Signal, signal } from '@angular/core';
+import { effect, Injectable, Signal, signal } from '@angular/core';
 import { Message } from '../model/message.model';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { environment } from 'src/environments/environment.development';
 import { firstValueFrom } from 'rxjs';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class MessagesService {
-  private messagesSignal = signal<Message[]>([]);
-  private lastScrollPosition = 0;
-  private pollingInterval: any;
+  messages = signal<Message[]>([]);
 
-  constructor(private httpClient: HttpClient) {}
+  private lastMessageId: string | null = null;
 
-  getMessages(): Signal<Message[]> {
-    return this.messagesSignal;
+  constructor(private httpClient: HttpClient) {
+    effect(() => {
+      const messages = this.messages();
+      this.lastMessageId =
+        messages.length > 0 ? messages[messages.length - 1].id : null;
+    });
   }
 
-  async postMessage(message: Message): Promise<void> {
-    await firstValueFrom(
+  async postMessage(message: Message): Promise<Message> {
+    return firstValueFrom(
       this.httpClient.post<Message>(
         `${environment.backendURL}/messages`,
         message,
-        { withCredentials: true }
+        {
+          withCredentials: true,
+        }
       )
     );
-    this.fetchMessages(true);
   }
 
-  startPolling(): void {
-    this.fetchMessages(false);
+  async fetchMessages() {
+    const queryParameters =
+      this.lastMessageId != null
+        ? new HttpParams().set('fromId', this.lastMessageId)
+        : new HttpParams();
+
+    const messages = await firstValueFrom(
+      this.httpClient.get<Message[]>(`${environment.backendURL}/messages`, {
+        params: queryParameters,
+        withCredentials: true,
+      })
+    );
+    this.messages.update((previousMessages) => [
+      ...previousMessages,
+      ...messages,
+    ]);
   }
 
-  stopPolling(): void {
-    if (this.pollingInterval) {
-      clearInterval(this.pollingInterval);
-      this.pollingInterval = null;
-      this.messagesSignal.set([]);
-    }
-  }
-
-  async fetchMessages(isNewMessage: boolean): Promise<void> {
-    try {
-      const messages = await firstValueFrom(
-        this.httpClient.get<Message[]>(`${environment.backendURL}/messages`, {
-          params: { limit: '1000' }, // Request more messages
-          withCredentials: true
-        })
-      );
-      
-      this.messagesSignal.set(messages.reverse());
-      
-      if (!isNewMessage) {
-        setTimeout(() => {
-          const scrollElement = document.querySelector('.messages-container');
-          if (scrollElement) {
-            scrollElement.scrollTop = this.lastScrollPosition;
-          }
-        }, 0);
-      } else {
-        setTimeout(() => {
-          const scrollElement = document.querySelector('.messages-container');
-          if (scrollElement) {
-            scrollElement.scrollTop = scrollElement.scrollHeight;
-          }
-        }, 0);
-      }
-    } catch (error: any) {
-      if (error.status === 403) {
-        this.stopPolling();
-      }
-    }
+  getMessages(): Signal<Message[]> {
+    return this.messages;
   }
 }
-

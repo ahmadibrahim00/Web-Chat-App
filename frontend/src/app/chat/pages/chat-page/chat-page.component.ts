@@ -1,15 +1,16 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ReactiveFormsModule } from '@angular/forms';
 import { AuthenticationService } from 'src/app/login/services/authentication.service';
+import { MessagesService } from '../../services/messages.service';
 import { Router } from '@angular/router';
 import { MessagesComponent } from '../../components/messages/messages.component';
 import { NewMessageFormComponent } from '../../components/new-message-form/new-message-form.component';
-import { MessagesService } from '../../services/messages.service';
-import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { Message } from '../../model/message.model';
-import { Subscription } from 'rxjs';
-import { WebSocketService } from '../../services/websocket.service';
+import { Observable, Subscription } from 'rxjs';
+import {
+  WebSocketEvent,
+  WebSocketService,
+} from '../../services/websocket.service';
 
 @Component({
   selector: 'app-chat-page',
@@ -17,60 +18,55 @@ import { WebSocketService } from '../../services/websocket.service';
   styleUrls: ['./chat-page.component.css'],
   standalone: true,
   imports: [
-    CommonModule,
-    DatePipe,
+    ReactiveFormsModule,
     MessagesComponent,
     NewMessageFormComponent,
-    ReactiveFormsModule,
     MatButtonModule,
   ],
 })
 export class ChatPageComponent implements OnInit, OnDestroy {
   messages = this.messagesService.getMessages();
   username = this.authenticationService.getUsername();
-  private wsSubscription: Subscription = new Subscription();
-  messageForm = this.fb.group({
-    msg: '',
-  });
+
+  notifications$: Observable<WebSocketEvent> | null = null;
+  notificationsSubscription: Subscription | null = null;
 
   constructor(
-    private fb: FormBuilder,
     private messagesService: MessagesService,
     private authenticationService: AuthenticationService,
-    private router: Router,
-    private websocketService: WebSocketService
+    private webSocketService: WebSocketService,
+    private router: Router
   ) {}
 
-  async ngOnInit() {
-    await this.messagesService.fetchMessages(false);
-    this.wsSubscription = this.websocketService.connect().subscribe((event) => {
-      if (event == 'notif') {
-        this.messagesService.fetchMessages(false);
-      }
+  ngOnInit() {
+    this.notifications$ = this.webSocketService.connect();
+    this.notificationsSubscription = this.notifications$.subscribe(() => {
+      this.messagesService.fetchMessages();
     });
+
+    this.messagesService.fetchMessages();
   }
 
-  showDateHeader(messages: Message[] | null, i: number) {
-    if (messages != null) {
-      if (i === 0) {
-        return true;
-      } else {
-        const prev = new Date(messages[i - 1].timestamp).setHours(0, 0, 0, 0);
-        const curr = new Date(messages[i].timestamp).setHours(0, 0, 0, 0);
-        return prev != curr;
-      }
+  ngOnDestroy() {
+    if (this.notificationsSubscription) {
+      this.notificationsSubscription.unsubscribe();
     }
-    return false;
+    this.webSocketService.disconnect();
+  }
+
+  async onPublishMessage(message: string) {
+    if (this.username() && message) {
+      await this.messagesService.postMessage({
+        id: '',
+        text: message,
+        username: this.username()!,
+        timestamp: new Date().getTime(),
+      });
+    }
   }
 
   async onLogout() {
     await this.authenticationService.logout();
     this.router.navigate(['/']);
-  }
-
-  ngOnDestroy(): void { 
-    if (this.wsSubscription) {
-      this.wsSubscription.unsubscribe();
-    }
   }
 }

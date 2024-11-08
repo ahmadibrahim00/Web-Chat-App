@@ -1,7 +1,7 @@
-.message-input {
+form {
   display: flex;
 }
 
-input[matInput] {
+mat-form-field {
   flex: 1;
 }

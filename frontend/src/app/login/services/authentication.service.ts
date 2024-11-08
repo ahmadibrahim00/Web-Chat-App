@@ -1,59 +1,51 @@
 import { Injectable, Signal, signal } from '@angular/core';
 import { UserCredentials } from '../model/user-credentials';
 import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../environments/environment';
-import { LoginResponse } from '../services/login-response';
 import { firstValueFrom } from 'rxjs';
-import { MessagesService } from "../../chat/services/messages.service";
+import { LoginResponse } from '../model/login-response';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthenticationService {
+  static LOGIN_PATH = '/auth/login';
+  static LOGOUT_PATH = '/auth/logout';
   static KEY = 'username';
+
   private username = signal<string | null>(null);
 
-  constructor(
-    private httpClient: HttpClient, 
-    private messagesService: MessagesService
-  ) {
-    const savedUsername = localStorage.getItem(AuthenticationService.KEY);
-    if (savedUsername) {
-      this.username.set(savedUsername);
-      this.messagesService.startPolling();
-    }
+  constructor(private httpClient: HttpClient) {
+    this.username.set(localStorage.getItem(AuthenticationService.KEY));
   }
 
-  async login(userCredentials: UserCredentials): Promise<void> {
+  async login(userCredentials: UserCredentials) {
     const response = await firstValueFrom(
       this.httpClient.post<LoginResponse>(
-        `${environment.backendURL}/auth/login`,
+        `${environment.backendURL}${AuthenticationService.LOGIN_PATH}`,
         userCredentials,
         { withCredentials: true }
       )
     );
-    
     localStorage.setItem(AuthenticationService.KEY, response.username);
     this.username.set(response.username);
-    this.messagesService.startPolling();
   }
 
-  async logout(): Promise<void> {
+  async logout() {
     await firstValueFrom(
-      this.httpClient.post<void>(
-        `${environment.backendURL}/auth/logout`,
-        {},
-        { withCredentials: true }
+      this.httpClient.post(
+        `${environment.backendURL}${AuthenticationService.LOGOUT_PATH}`,
+        null,
+        {
+          withCredentials: true,
+        }
       )
     );
-    
     localStorage.removeItem(AuthenticationService.KEY);
     this.username.set(null);
-    this.messagesService.stopPolling();
   }
 
   getUsername(): Signal<string | null> {
     return this.username;
   }
 }
-
