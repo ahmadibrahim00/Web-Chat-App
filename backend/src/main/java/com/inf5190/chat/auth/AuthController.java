@@ -67,7 +67,6 @@ public class AuthController {
                 .build();
 
         LoginResponse loginResponse = new LoginResponse(loginRequest.username());
-        System.out.println(sessionManager.getSession(sessionId));
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(loginResponse);
