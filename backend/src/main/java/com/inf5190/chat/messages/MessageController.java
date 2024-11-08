@@ -15,6 +15,7 @@ import com.inf5190.chat.auth.AuthController;
 import com.inf5190.chat.auth.session.SessionData;
 import com.inf5190.chat.auth.session.SessionManager;
 import com.inf5190.chat.messages.model.Message;
+import com.inf5190.chat.messages.model.NewMessageRequest;
 import com.inf5190.chat.messages.repository.MessageRepository;
 import com.inf5190.chat.websocket.WebSocketManager;
 
@@ -44,7 +45,8 @@ public class MessageController {
     }
 
     @PostMapping(MESSAGES_PATH)
-    public Message createMessage(@RequestBody Message newMessage, @CookieValue(AuthController.SESSION_ID_COOKIE_NAME) String sessionId) throws InterruptedException, ExecutionException {
+    public Message createMessage(@RequestBody NewMessageRequest newMessage, @CookieValue(AuthController.SESSION_ID_COOKIE_NAME) String sessionId)
+            throws InterruptedException, ExecutionException {
         SessionData sessionData = this.sessionManager.getSession(sessionId);
         Message message = this.messageRepository.createMessage(newMessage, sessionData.username());
         this.webSocketManager.notifySessions();

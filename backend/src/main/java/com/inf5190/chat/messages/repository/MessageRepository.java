@@ -15,8 +15,15 @@ import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.Query;
 import com.google.cloud.firestore.QuerySnapshot;
+import com.google.cloud.storage.Bucket;
+import com.google.cloud.storage.Bucket.BlobTargetOption;
+import com.google.cloud.storage.Storage.PredefinedAcl;
 import com.google.firebase.cloud.FirestoreClient;
+import com.google.firebase.cloud.StorageClient;
 import com.inf5190.chat.messages.model.Message;
+import com.inf5190.chat.messages.model.NewMessageRequest;
+
+import io.jsonwebtoken.io.Decoders;
 
 /**
  * Classe qui gère la persistence des messages.
@@ -26,15 +33,14 @@ import com.inf5190.chat.messages.model.Message;
 public class MessageRepository {
 
     private final Firestore firestore;
+    private final String BUCKET_NAME = "inf5190-chat-5893c.appspot.com";
 
     public MessageRepository() {
         this.firestore = FirestoreClient.getFirestore();
     }
 
     public List<Message> getMessages(String fromId) throws InterruptedException, ExecutionException {
-        // Commencer par une requête qui ordonne les messages par timestamp de manière croissante ou décroissante
         Query query;
-
         if (fromId == null || fromId.isEmpty()) {
             // Si fromId est null, on récupère les 20 derniers messages en ordre décroissant
             query = firestore.collection("messages")
@@ -48,18 +54,15 @@ public class MessageRepository {
                     .get();
 
             if (fromDoc.exists()) {
-                // Commence après le message trouvé avec fromId
                 query = firestore.collection("messages")
                         .orderBy("timestamp", Query.Direction.ASCENDING)
                         .startAfter(fromDoc)
                         .limit(20);
             } else {
-                // Si fromId n'est pas trouvé, on peut gérer cela comme une erreur ou un retour vide
                 throw new IllegalArgumentException("Le message avec l'id " + fromId + " n'a pas été trouvé.");
             }
         }
 
-        // Exécution de la requête et récupération des résultats
         List<Message> messages = new ArrayList<>();
         QuerySnapshot querySnapshot = query.get().get();
 
@@ -69,11 +72,10 @@ public class MessageRepository {
                     doc.getId(),
                     firestoreMessage.getText(),
                     firestoreMessage.getUsername(),
-                    firestoreMessage.getTimestamp().getSeconds() * 1000
+                    firestoreMessage.getTimestamp().getSeconds() * 1000,
+                    firestoreMessage.getImageUrl()
             ));
         }
-
-        // Si on est dans le cas de la première récupération (fromId == null), les messages sont déjà triés du plus récent au plus ancien
         if (fromId == null || fromId.isEmpty()) {
             // On inverse les messages pour avoir les plus anciens en haut
             Collections.reverse(messages);
@@ -82,25 +84,43 @@ public class MessageRepository {
         return messages;
     }
 
-    public Message createMessage(Message message, String authenticateUser) throws InterruptedException, ExecutionException {
-        if (!authenticateUser.equals(message.username())) {
+    public Message createMessage(NewMessageRequest messageRequest, String authenticateUser) throws InterruptedException, ExecutionException {
+        if (!authenticateUser.equals(messageRequest.username())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Mauvais Utilisateur");
         }
 
+        DocumentReference docRef = firestore.collection("messages").document();
+        String imageUrl = null;
+
+        // Handle image data if present
+        if (messageRequest.imageData() != null) {
+            Bucket bucket = StorageClient.getInstance().bucket(BUCKET_NAME);
+            String path = String.format("images/%s.%s", docRef.getId(),
+                    messageRequest.imageData().type());
+
+            bucket.create(path, Decoders.BASE64.decode(messageRequest.imageData().data()),
+                    BlobTargetOption.predefinedAcl(PredefinedAcl.PUBLIC_READ));
+
+            imageUrl = String.format("https://storage.googleapis.com/%s/%s", BUCKET_NAME, path);
+        }
+
+        System.out.println(messageRequest);
+
         FirestoreMessage firestoreMessage = new FirestoreMessage(
-                message.username(),
+                messageRequest.username(),
                 Timestamp.now(),
-                message.text()
+                messageRequest.text(),
+                imageUrl
         );
 
-        DocumentReference docRef = firestore.collection("messages").document();
         docRef.set(firestoreMessage).get();
 
         return new Message(
                 docRef.getId(),
                 firestoreMessage.getText(),
                 firestoreMessage.getUsername(),
-                firestoreMessage.getTimestamp().getSeconds() * 1000
+                firestoreMessage.getTimestamp().getSeconds() * 1000,
+                firestoreMessage.getImageUrl()
         );
     }
 }
