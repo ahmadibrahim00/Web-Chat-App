@@ -24,7 +24,7 @@ public class SessionManager {
     private static final String SECRET_KEY_BASE64;
     private final SecretKey secretKey;
     private final JwtParser jwtParser;
-    private final Map<String, SessionData> sessions = new HashMap<>();
+ 
 
     static {
         SecretKey generatedKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
@@ -48,10 +48,6 @@ public class SessionManager {
                 .compact();
     }
 
-    public void removeSession(String sessionId) {
-        this.sessions.remove(sessionId);
-    }
-
     public SessionData getSession(String sessionId) {
         try {
 
@@ -62,8 +58,8 @@ public class SessionManager {
             return new SessionData(username);
 
         } catch (JwtException e) {
-
-            return null;
-        }
-    }
+         
+            return null;    
+      }
+   }
 }

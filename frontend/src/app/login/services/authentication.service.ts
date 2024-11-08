@@ -1,14 +1,16 @@
 import { Injectable, Signal, signal } from '@angular/core';
 import { UserCredentials } from '../model/user-credentials';
 import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../environments/environment';
-import { LoginResponse } from '../services/login-response';
 import { firstValueFrom } from 'rxjs';
+import { LoginResponse } from '../model/login-response';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthenticationService {
+  static LOGIN_PATH = '/auth/login';
+  static LOGOUT_PATH = '/auth/logout';
   static KEY = 'username';
 
   private username = signal<string | null>(null);
@@ -17,34 +19,30 @@ export class AuthenticationService {
     this.username.set(localStorage.getItem(AuthenticationService.KEY));
   }
 
-  async login(userCredentials: UserCredentials): Promise<void> {
-    await firstValueFrom(
+  async login(userCredentials: UserCredentials) {
+    const response = await firstValueFrom(
       this.httpClient.post<LoginResponse>(
-        `${environment.backendURL}/auth/login`,
+        `${environment.backendURL}${AuthenticationService.LOGIN_PATH}`,
         userCredentials,
-        {
-          withCredentials: true,
-        }
+        { withCredentials: true }
       )
-    ).then((response) => {
-      localStorage.setItem(AuthenticationService.KEY, response.username);
-      this.username.set(response.username);
-    });
+    );
+    localStorage.setItem(AuthenticationService.KEY, response.username);
+    this.username.set(response.username);
   }
 
-  async logout(): Promise<void> {
+  async logout() {
     await firstValueFrom(
-      this.httpClient.post<void>(
-        `${environment.backendURL}/auth/logout`,
-        {},
+      this.httpClient.post(
+        `${environment.backendURL}${AuthenticationService.LOGOUT_PATH}`,
+        null,
         {
           withCredentials: true,
         }
       )
-    ).then(() => {
-      localStorage.removeItem(AuthenticationService.KEY);
-      this.username.set(null);
-    });
+    );
+    localStorage.removeItem(AuthenticationService.KEY);
+    this.username.set(null);
   }
 
   getUsername(): Signal<string | null> {

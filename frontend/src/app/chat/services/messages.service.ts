@@ -1,45 +1,56 @@
-import { Injectable, Signal, signal } from '@angular/core';
+import { effect, Injectable, Signal, signal } from '@angular/core';
 import { Message } from '../model/message.model';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { environment } from 'src/environments/environment.development';
 import { firstValueFrom } from 'rxjs';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class MessagesService {
   messages = signal<Message[]>([]);
-  lastId = -1;
 
-  constructor(private httpClient: HttpClient) {}
+  private lastMessageId: string | null = null;
 
-  async postMessage(message: Message): Promise<void> {
-    await firstValueFrom(
+  constructor(private httpClient: HttpClient) {
+    effect(() => {
+      const messages = this.messages();
+      this.lastMessageId =
+        messages.length > 0 ? messages[messages.length - 1].id : null;
+    });
+  }
+
+  async postMessage(message: Message): Promise<Message> {
+    return firstValueFrom(
       this.httpClient.post<Message>(
         `${environment.backendURL}/messages`,
         message,
-        { withCredentials: true }
+        {
+          withCredentials: true,
+        }
       )
     );
   }
 
-  getMessages(): Signal<Message[]> {
-    return this.messages;
-  }
+  async fetchMessages() {
+    const queryParameters =
+      this.lastMessageId != null
+        ? new HttpParams().set('fromId', this.lastMessageId)
+        : new HttpParams();
 
-  async fetchMessages(): Promise<void> {
-    const params = new HttpParams().set('id', this.lastId);
-    await firstValueFrom(
+    const messages = await firstValueFrom(
       this.httpClient.get<Message[]>(`${environment.backendURL}/messages`, {
-        params,
+        params: queryParameters,
         withCredentials: true,
       })
-    ).then((newMessages) => {
-      if (newMessages.length > 0) {
-        const currentMessages = this.messages();
-        this.messages.set([...currentMessages, ...newMessages]);
-        this.lastId = newMessages[newMessages.length - 1].id;
-      }
-    });
+    );
+    this.messages.update((previousMessages) => [
+      ...previousMessages,
+      ...messages,
+    ]);
+  }
+
+  getMessages(): Signal<Message[]> {
+    return this.messages;
   }
 }

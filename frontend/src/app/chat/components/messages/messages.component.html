@@ -6,9 +6,7 @@
       {{ m.timestamp | date }}
     </h3>
     }
-    <p class="chat-messages">
-      [{{ m.timestamp | date : 'hh:mm' }}] {{ m.username }} : {{ m.text }}
-    </p>
+    <p>[{{ m.timestamp | date : 'hh:mm' }}] {{ m.username }} : {{ m.text }}</p>
   </div>
   }
 </div>

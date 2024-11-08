@@ -1,17 +1,6 @@
-<div class="new-message-form-container">
-  <form (ngSubmit)="onPublishMessage()" [formGroup]="messageForm">
-    <mat-form-field class="message-input" subscriptSizing="dynamic">
-      <mat-label>Envoyer un message</mat-label>
-      <input
-        matInput
-        name="message"
-        type="text"
-        formControlName="msg"
-        placeholder="Tapez votre message..."
-      />
-      <button mat-icon-button matSuffix type="submit">
-        <mat-icon>send</mat-icon>
-      </button>
-    </mat-form-field>
-  </form>
-</div>
+<form (ngSubmit)="onPublishMessage()" [formGroup]="messageForm">
+  <mat-form-field subscriptSizing="dynamic">
+    <input matInput name="message" type="text" formControlName="msg" />
+    <button mat-icon-button matSuffix type="submit">></button>
+  </mat-form-field>
+</form>

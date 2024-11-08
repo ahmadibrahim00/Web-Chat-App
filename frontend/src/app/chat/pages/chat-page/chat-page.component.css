@@ -4,13 +4,20 @@
   align-items: center;
 }
 
-.chat-container {
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
-  border: 1px solid grey;
-}
-
 .chat-logout-button {
   align-self: flex-end;
-  margin: 3px;
+  margin-bottom: 3px;
+}
+
+.chat-messages {
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  border-color: gray;
+  border-style: solid;
+  border-width: 1px;
+  width: 60vw;
+}
+
+p {
+  margin: 10px;
 }
