@@ -74,9 +74,7 @@ public class AuthController {
 
     @PostMapping(AUTH_LOGOUT_PATH)
     public ResponseEntity<String> logout(@CookieValue(SESSION_ID_COOKIE_NAME) Cookie sessionCookie) {
-        if (sessionCookie != null) {
-            sessionManager.removeSession(SESSION_ID_COOKIE_NAME);
-        }
+
         ResponseCookie deleteCookie = ResponseCookie.from("sid", "")
                 .httpOnly(true)
                 .path("/")
@@ -84,18 +82,8 @@ public class AuthController {
                 .httpOnly(true)
                 .build();
 
-   @PostMapping(AUTH_LOGOUT_PATH)
-   public ResponseEntity<String> logout(@CookieValue(SESSION_ID_COOKIE_NAME) Cookie sessionCookie) {
-
-      ResponseCookie deleteCookie = ResponseCookie.from("sid", "")
-            .httpOnly(true)
-            .path("/")
-            .maxAge(0) // Supresseion du cookie
-            .httpOnly(true)
-            .build();
-
-      return ResponseEntity.ok()
-            .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
-            .build();
-   }
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
+                .build();
+    }
 }
