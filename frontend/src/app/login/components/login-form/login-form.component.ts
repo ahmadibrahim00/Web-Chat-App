@@ -1,4 +1,4 @@
-import { Component, output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { UserCredentials } from '../../model/user-credentials';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -25,6 +25,7 @@ export class LoginFormComponent {
     password: ['', Validators.required],
   });
 
+  errorMessage = input<string | null>();
   login = output<UserCredentials>();
 
   constructor(private fb: FormBuilder) {}
