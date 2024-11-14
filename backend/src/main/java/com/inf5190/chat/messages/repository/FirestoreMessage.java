@@ -1,9 +1,11 @@
 package com.inf5190.chat.messages.repository;
 
 import com.google.cloud.Timestamp;
+import com.google.cloud.firestore.annotation.DocumentId;
 
 public class FirestoreMessage {
 
+    @DocumentId
     private String id;
 
     private String username;

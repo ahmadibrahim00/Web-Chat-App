@@ -1,6 +1,7 @@
 package com.inf5190.chat.messages;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
@@ -44,10 +45,10 @@ public class MessageController {
     }
 
     @GetMapping(MESSAGES_PATH)
-    public ResponseEntity<List<Message>> getMessages(@RequestParam(required = false) String fromId)
+    public ResponseEntity<List<Message>> getMessages(@RequestParam Optional<String> fromId)
             throws InterruptedException, ExecutionException {
         try {
-            return ResponseEntity.ok().body(messageRepository.getMessages(fromId));
+            return ResponseEntity.ok().body(messageRepository.getMessages(fromId.orElse(null)));
         } catch (ResponseStatusException e) {
             throw e;
         } catch (InterruptedException | ExecutionException e) {
