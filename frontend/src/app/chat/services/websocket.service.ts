@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { environment } from 'src/environments/environment';
-import { MessagesService } from './messages.service';
 
-export type WebSocketEvent = 'notif';
+export type WebSocketEvent = 'notif' | 'connected';
 
 @Injectable({
   providedIn: 'root',
@@ -14,31 +13,19 @@ export class WebSocketService {
   private reconnectDelay = 2000; // Delay in milliseconds (2 seconds)
   private isReconnecting = false;
 
-  constructor(private messagesService: MessagesService) {}
-
   public connect(): Observable<WebSocketEvent> {
     if (!this.ws) {
-      this.createWebSocket(); // Create WebSocket only if it's not already created
+      this.createWebSocket();
     }
     return this.events.asObservable();
   }
 
   private createWebSocket() {
     this.ws = new WebSocket(`${environment.wsURL}/notifications`);
-
-    this.ws.onopen = () => {
-      console.log('WebSocket connection established');
-      this.events.next('notif');
-    };
+    this.ws.onopen = () => this.events.next('notif');
     this.ws.onmessage = () => this.events.next('notif');
-    this.ws.onclose = () => {
-      console.log('WebSocket connection closed. Reconnecting...');
-      this.handleReconnect();
-    };
-    this.ws.onerror = () => {
-      console.error('WebSocket error. Reconnecting...');
-      this.handleReconnect();
-    };
+    this.ws.onclose = () => this.handleReconnect();
+    this.ws.onerror = () => this.handleReconnect();
   }
 
   private handleReconnect() {

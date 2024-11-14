@@ -57,13 +57,23 @@ public class MessageController {
     }
 
     @PostMapping(MESSAGES_PATH)
-    public Message createMessage(@RequestBody NewMessageRequest newMessage, @CookieValue(AuthController.SESSION_ID_COOKIE_NAME) String sessionId)
+    public Message createMessage(
+            @CookieValue(AuthController.SESSION_ID_COOKIE_NAME) String sessionCookie,
+            @RequestBody NewMessageRequest message)
             throws InterruptedException, ExecutionException {
+
+        if (sessionCookie == null || sessionCookie.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+        SessionData sessionData = this.sessionManager.getSession(sessionCookie);
+        if (sessionData == null || !sessionData.username().equals(message.username())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+
         try {
-            SessionData sessionData = this.sessionManager.getSession(sessionId);
-            Message message = this.messageRepository.createMessage(newMessage, sessionData.username());
+            Message newMessage = this.messageRepository.createMessage(message);
             this.webSocketManager.notifySessions();
-            return message;
+            return newMessage;
         } catch (ResponseStatusException e) {
             throw e;
         } catch (InterruptedException | ExecutionException e) {

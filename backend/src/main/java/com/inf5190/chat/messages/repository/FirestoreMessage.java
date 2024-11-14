@@ -4,6 +4,8 @@ import com.google.cloud.Timestamp;
 
 public class FirestoreMessage {
 
+    private String id;
+
     private String username;
     private Timestamp timestamp;
     private String text;
@@ -17,6 +19,10 @@ public class FirestoreMessage {
         this.timestamp = timestamp;
         this.text = text;
         this.imageUrl = imageUrl;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public String getUsername() {
