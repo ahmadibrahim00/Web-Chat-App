@@ -1,4 +1,4 @@
-import { effect, Injectable, Signal, signal } from '@angular/core';
+import { Injectable, Signal, signal } from '@angular/core';
 import { Message, NewMessageRequest } from '../model/message.model';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
@@ -12,13 +12,7 @@ export class MessagesService {
 
   private lastMessageId: string | null = null;
 
-  constructor(private httpClient: HttpClient) {
-    effect(() => {
-      const messages = this.messages();
-      this.lastMessageId =
-        messages.length > 0 ? messages[messages.length - 1].id : null;
-    });
-  }
+  constructor(private httpClient: HttpClient) {}
 
   async postMessage(message: NewMessageRequest): Promise<Message> {
     return firstValueFrom(
