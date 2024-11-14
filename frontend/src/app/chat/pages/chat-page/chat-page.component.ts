@@ -47,7 +47,7 @@ export class ChatPageComponent implements OnInit, OnDestroy {
     this.notifications$ = this.webSocketService.connect();
     this.notificationsSubscription = this.notifications$.subscribe({
       next: () => this.fetchMessageWithErrorHandling(),
-      complete: () => console.log('WebSocket connection closed.'),
+      complete: () => console.log('WebSocket connection complete.'),
       error: (err) => console.error('WebSocket error:', err),
     });
   }

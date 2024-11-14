@@ -12,11 +12,17 @@ export class WebSocketService {
   private events: Subject<WebSocketEvent> = new Subject<WebSocketEvent>();
   private reconnectDelay = 2000; // Delay in milliseconds (2 seconds)
   private isReconnecting = false;
+  private shouldReconnect = true;
 
   public connect(): Observable<WebSocketEvent> {
-    if (!this.ws) {
-      this.createWebSocket();
+    if (this.events.closed) {
+      this.events = new Subject<WebSocketEvent>();
     }
+
+    // Set shouldReconnect to true whenever we initiate a connection
+    this.shouldReconnect = true;
+    this.createWebSocket();
+
     return this.events.asObservable();
   }
 
@@ -24,8 +30,19 @@ export class WebSocketService {
     this.ws = new WebSocket(`${environment.wsURL}/notifications`);
     this.ws.onopen = () => this.events.next('notif');
     this.ws.onmessage = () => this.events.next('notif');
-    this.ws.onclose = () => this.handleReconnect();
-    this.ws.onerror = () => this.handleReconnect();
+    this.ws.onclose = () => {
+      console.log('WebSocket closed.');
+      if (this.shouldReconnect) {
+        this.handleReconnect();
+      }
+    };
+
+    this.ws.onerror = () => {
+      console.error('WebSocket encountered an error.');
+      if (this.shouldReconnect) {
+        this.handleReconnect();
+      }
+    };
   }
 
   private handleReconnect() {
@@ -35,17 +52,16 @@ export class WebSocketService {
         this.isReconnecting = false;
         if (this.ws) {
           this.ws.close();
-          this.createWebSocket();
+          this.ws = null;
         }
+        this.createWebSocket();
       }, this.reconnectDelay);
     }
   }
 
   public disconnect() {
-    if (this.ws) {
-      this.ws.close();
-      this.ws = null;
-    }
-    this.events.complete();
+    this.shouldReconnect = false; // Prevent reconnection when disconnecting manually
+    this.ws?.close();
+    this.ws = null;
   }
 }
