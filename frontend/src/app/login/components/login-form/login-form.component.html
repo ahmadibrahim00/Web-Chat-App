@@ -34,4 +34,9 @@
   <div>
     <button mat-flat-button color="primary" type="submit">Connexion</button>
   </div>
+  <div>
+    @if(errorMessage()) {
+    <p class="error">{{ errorMessage() }}</p>
+    }
+  </div>
 </form>

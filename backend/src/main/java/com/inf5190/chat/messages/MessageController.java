@@ -3,6 +3,9 @@ package com.inf5190.chat.messages;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.inf5190.chat.auth.AuthController;
 import com.inf5190.chat.auth.session.SessionData;
@@ -26,6 +30,7 @@ import com.inf5190.chat.websocket.WebSocketManager;
 public class MessageController {
 
     public static final String MESSAGES_PATH = "/messages";
+    private static final Logger LOGGER = LoggerFactory.getLogger(MessageController.class);
 
     private final MessageRepository messageRepository;
     private final WebSocketManager webSocketManager;
@@ -41,15 +46,39 @@ public class MessageController {
     @GetMapping(MESSAGES_PATH)
     public ResponseEntity<List<Message>> getMessages(@RequestParam(required = false) String fromId)
             throws InterruptedException, ExecutionException {
-        return ResponseEntity.ok().body(messageRepository.getMessages(fromId));
+        try {
+            return ResponseEntity.ok().body(messageRepository.getMessages(fromId));
+        } catch (ResponseStatusException e) {
+            throw e;
+        } catch (InterruptedException | ExecutionException e) {
+            LOGGER.warn("Unexpected error during logout.", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error on logout");
+        }
     }
 
     @PostMapping(MESSAGES_PATH)
-    public Message createMessage(@RequestBody NewMessageRequest newMessage, @CookieValue(AuthController.SESSION_ID_COOKIE_NAME) String sessionId)
+    public Message createMessage(
+            @CookieValue(AuthController.SESSION_ID_COOKIE_NAME) String sessionCookie,
+            @RequestBody NewMessageRequest message)
             throws InterruptedException, ExecutionException {
-        SessionData sessionData = this.sessionManager.getSession(sessionId);
-        Message message = this.messageRepository.createMessage(newMessage, sessionData.username());
-        this.webSocketManager.notifySessions();
-        return message;
+
+        if (sessionCookie == null || sessionCookie.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+        SessionData sessionData = this.sessionManager.getSession(sessionCookie);
+        if (sessionData == null || !sessionData.username().equals(message.username())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+
+        try {
+            Message newMessage = this.messageRepository.createMessage(message);
+            this.webSocketManager.notifySessions();
+            return newMessage;
+        } catch (ResponseStatusException e) {
+            throw e;
+        } catch (InterruptedException | ExecutionException e) {
+            LOGGER.warn("Unexpected error during logout.", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error on logout");
+        }
     }
 }

@@ -48,4 +48,8 @@ export class AuthenticationService {
   getUsername(): Signal<string | null> {
     return this.username;
   }
+
+  isConnected() {
+    return localStorage.getItem(AuthenticationService.KEY);
+  }
 }

@@ -13,6 +13,7 @@ import {
 } from '../../services/websocket.service';
 import { FileReaderService } from '../../services/file-reader.service';
 import { ChatImageData } from '../../model/message.model';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-chat-page',
@@ -33,7 +34,6 @@ export class ChatPageComponent implements OnInit, OnDestroy {
   notifications$: Observable<WebSocketEvent> | null = null;
   notificationsSubscription: Subscription | null = null;
   imageData: ChatImageData | null = null;
-  private imageReadPromise: Promise<void> | null = null; // Promise to track image loading
 
   constructor(
     private messagesService: MessagesService,
@@ -45,11 +45,11 @@ export class ChatPageComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.notifications$ = this.webSocketService.connect();
-    this.notificationsSubscription = this.notifications$.subscribe(() => {
-      this.messagesService.fetchMessages();
+    this.notificationsSubscription = this.notifications$.subscribe({
+      next: () => this.fetchMessageWithErrorHandling(),
+      complete: () => console.log('WebSocket connection closed.'),
+      error: (err) => console.error('WebSocket error:', err),
     });
-
-    this.messagesService.fetchMessages();
   }
 
   ngOnDestroy() {
@@ -59,16 +59,14 @@ export class ChatPageComponent implements OnInit, OnDestroy {
     this.webSocketService.disconnect();
   }
 
-  selectedImage(file: File | null) {
-    if (file) {
-      this.imageReadPromise = this.fileReaderService
-        .readFile(file)
-        .then((data) => {
-          this.imageData = data;
-        });
-    } else {
-      this.imageData = null;
-      this.imageReadPromise = Promise.resolve();
+  async fetchMessageWithErrorHandling() {
+    try {
+      await this.messagesService.fetchMessages();
+    } catch (error) {
+      if (error instanceof HttpErrorResponse && error.status === 403) {
+        console.log(error);
+        this.onLogout();
+      }
     }
   }
 
@@ -80,13 +78,17 @@ export class ChatPageComponent implements OnInit, OnDestroy {
       imageData = await this.fileReaderService.readFile(file);
     }
 
-    // Send the message with or without the image data
     if (this.username()) {
-      await this.messagesService.postMessage({
-        text: msg,
-        username: this.username()!,
-        imageData,
-      });
+      try {
+        await this.messagesService.postMessage({
+          text: msg,
+          username: this.username()!,
+          imageData,
+        });
+      } catch (error) {
+        if (error instanceof HttpErrorResponse)
+          if (error.status === 403) this.onLogout();
+      }
     }
   }
 
