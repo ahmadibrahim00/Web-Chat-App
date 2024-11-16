@@ -31,14 +31,12 @@ export class WebSocketService {
     this.ws.onopen = () => this.events.next('notif');
     this.ws.onmessage = () => this.events.next('notif');
     this.ws.onclose = () => {
-      console.log('WebSocket closed.');
       if (this.shouldReconnect) {
         this.handleReconnect();
       }
     };
 
     this.ws.onerror = () => {
-      console.error('WebSocket encountered an error.');
       if (this.shouldReconnect) {
         this.handleReconnect();
       }

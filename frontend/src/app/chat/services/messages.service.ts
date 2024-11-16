@@ -38,13 +38,28 @@ export class MessagesService {
         withCredentials: true,
       })
     );
-    this.messages.update((previousMessages) => [
-      ...previousMessages,
-      ...messages,
-    ]);
+    this.messages.update((previousMessages) =>
+      this.combineUniqueById(previousMessages, messages)
+    );
+    this.lastMessageId =
+      messages.length > 0 ? this.messages()[messages.length - 1].id : null;
   }
 
   getMessages(): Signal<Message[]> {
     return this.messages;
+  }
+
+  private combineUniqueById(
+    previousMessages: Message[],
+    messagesToAdd: Message[]
+  ) {
+    const combinedMessages = [...previousMessages];
+    for (const messageToAdd of messagesToAdd) {
+      if (!combinedMessages.find((m) => m.id === messageToAdd.id)) {
+        // add only if a message with that id is not already present
+        combinedMessages.push(messageToAdd);
+      }
+    }
+    return combinedMessages;
   }
 }
