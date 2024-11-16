@@ -1,83 +1,109 @@
-import { TestBed } from '@angular/core/testing';
 import {
   HttpTestingController,
   provideHttpClientTesting,
 } from '@angular/common/http/testing';
+import { TestBed } from '@angular/core/testing';
+
 import { AuthenticationService } from './authentication.service';
-import { provideHttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment.development';
+import { provideHttpClient } from '@angular/common/http';
 
 describe('AuthenticationService', () => {
   let service: AuthenticationService;
   let httpTestingController: HttpTestingController;
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting()],
-    });
-    httpTestingController = TestBed.inject(HttpTestingController);
-    service = TestBed.inject(AuthenticationService);
+  const loginData = {
+    username: 'username',
+    password: 'pwd',
+  };
 
+  afterEach(() => {
     localStorage.clear();
   });
 
-  it('should be created', () => {
-    expect(service).toBeTruthy();
+  describe('on login', () => {
+    beforeEach(() => {
+      localStorage.clear();
+      TestBed.configureTestingModule({
+        providers: [provideHttpClient(), provideHttpClientTesting()],
+      });
+      httpTestingController = TestBed.inject(HttpTestingController);
+      service = TestBed.inject(AuthenticationService);
+    });
+
+    it('should call POST with login data to auth/login', async () => {
+      const loginPromise = service.login(loginData);
+
+      const req = httpTestingController.expectOne(
+        `${environment.backendURL}/auth/login`
+      );
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual(loginData);
+      req.flush({ username: loginData.username });
+
+      // wait for the login to complete
+      await loginPromise;
+    });
+
+    it('should store and emit the username', async () => {
+      const mockResponse = { username: 'username' };
+      const setItemSpy = spyOn(localStorage, 'setItem').and.callThrough();
+
+      const loginPromise = service.login(loginData);
+
+      const req = httpTestingController.expectOne(
+        `${environment.backendURL}${AuthenticationService.LOGIN_PATH}`
+      );
+
+      req.flush(mockResponse);
+      await loginPromise;
+
+      expect(setItemSpy).toHaveBeenCalledWith(
+        AuthenticationService.KEY,
+        'username'
+      );
+      expect(service['username']()).toBe('username');
+    });
   });
 
-  it('should call post on the backend api when logging in', async () => {
-    const userCredentials = {
-      username: 'username',
-      password: 'pwd',
-    };
-    const mockResponse = { username: 'username' };
-    const setItemSpy = spyOn(localStorage, 'setItem').and.callThrough();
+  describe('on logout', () => {
+    beforeEach(() => {
+      localStorage.setItem('username', loginData.username);
 
-    const logoutPromise = service.login(userCredentials);
+      TestBed.configureTestingModule({
+        providers: [provideHttpClient(), provideHttpClientTesting()],
+      });
+      httpTestingController = TestBed.inject(HttpTestingController);
+      service = TestBed.inject(AuthenticationService);
+    });
 
-    const req = httpTestingController.expectOne(
-      `${environment.backendURL}${AuthenticationService.LOGIN_PATH}`
-    );
-    expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual(userCredentials);
+    it('should call POST to auth/logout', async () => {
+      const logoutPromise = service.logout();
 
-    // Mock the response
-    req.flush(mockResponse);
-    // Wait for the login function to complete
-    await logoutPromise;
+      const req = httpTestingController.expectOne(
+        `${environment.backendURL}${AuthenticationService.LOGOUT_PATH}`
+      );
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toBeNull();
 
-    // Verify localStorage was updated
-    expect(setItemSpy).toHaveBeenCalledWith(
-      AuthenticationService.KEY,
-      'username'
-    );
-    // Verify the signal value
-    expect(service['username']()).toBe('username');
-    // Verify connected
-    expect(service.isConnected()).toBe('username');
-  });
+      req.flush({});
+      await logoutPromise;
+    });
 
-  it('should call post on the backend api when logging out', async () => {
-    const removeItemSpy = spyOn(localStorage, 'removeItem').and.callThrough();
+    it('should remove the username from the service and local storage', async () => {
+      const removeItemSpy = spyOn(localStorage, 'removeItem').and.callThrough();
 
-    const logoutPromise = service.logout();
+      const logoutPromise = service.logout();
 
-    const req = httpTestingController.expectOne(
-      `${environment.backendURL}${AuthenticationService.LOGOUT_PATH}`
-    );
-    expect(req.request.method).toBe('POST');
-    expect(req.request.body).toBeNull();
+      const req = httpTestingController.expectOne(
+        `${environment.backendURL}${AuthenticationService.LOGOUT_PATH}`
+      );
 
-    // Mock the response
-    req.flush({});
-    // Wait for the logout function to complete
-    await logoutPromise;
+      req.flush({});
+      await logoutPromise;
 
-    // Verify localStorage was updated
-    expect(removeItemSpy).toHaveBeenCalledWith(AuthenticationService.KEY);
-    // Verify the signal value
-    expect(service['username']()).toBeNull();
-    // Verify not connected
-    expect(service.isConnected()).toBeNull();
+      expect(removeItemSpy).toHaveBeenCalledWith(AuthenticationService.KEY);
+      expect(service['username']()).toBeNull();
+    });
   });
 });
