@@ -8,8 +8,12 @@
         type="text"
         formControlName="username"
         placeholder="Entrez votre nom d'utilisateur"
+        data-testid="username-input"
       />
-      <mat-error *ngIf="loginForm.get('username')?.hasError('required')">
+      <mat-error
+        *ngIf="loginForm.get('username')?.hasError('required')"
+        data-testid="username-error"
+      >
         Nom d'utilisateur requis.
       </mat-error>
     </mat-form-field>
@@ -24,19 +28,30 @@
         type="password"
         formControlName="password"
         placeholder="Entrez votre mot de passe"
+        data-testid="password-input"
       />
-      <mat-error *ngIf="loginForm.get('password')?.hasError('required')">
+      <mat-error
+        *ngIf="loginForm.get('password')?.hasError('required')"
+        data-testid="password-error"
+      >
         Mot de passe requis.
       </mat-error>
     </mat-form-field>
   </div>
 
   <div>
-    <button mat-flat-button color="primary" type="submit">Connexion</button>
+    <button
+      mat-flat-button
+      color="primary"
+      type="submit"
+      data-testid="submit-button"
+    >
+      Connexion
+    </button>
   </div>
   <div>
     @if(errorMessage()) {
-    <p class="error">{{ errorMessage() }}</p>
+    <p class="error" data-testid="error-message">{{ errorMessage() }}</p>
     }
   </div>
 </form>
