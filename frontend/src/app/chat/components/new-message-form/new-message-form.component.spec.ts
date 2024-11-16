@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 import { NewMessageFormComponent } from './new-message-form.component';
 
@@ -8,9 +9,8 @@ describe('NewMessageFormComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [NewMessageFormComponent]
-    })
-    .compileComponents();
+      imports: [NewMessageFormComponent, NoopAnimationsModule],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(NewMessageFormComponent);
     component = fixture.componentInstance;
