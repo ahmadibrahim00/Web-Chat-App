@@ -43,7 +43,6 @@ describe('AuthenticationService', () => {
 
     // Mock the response
     req.flush(mockResponse);
-
     // Wait for the login function to complete
     await logoutPromise;
 
@@ -52,9 +51,9 @@ describe('AuthenticationService', () => {
       AuthenticationService.KEY,
       'username'
     );
-
     // Verify the signal value
     expect(service['username']()).toBe('username');
+    // Verify connected
     expect(service.isConnected()).toBe('username');
   });
 
@@ -71,15 +70,14 @@ describe('AuthenticationService', () => {
 
     // Mock the response
     req.flush({});
-
-    // Wait for the login function to complete
+    // Wait for the logout function to complete
     await logoutPromise;
 
     // Verify localStorage was updated
     expect(removeItemSpy).toHaveBeenCalledWith(AuthenticationService.KEY);
-
     // Verify the signal value
     expect(service['username']()).toBeNull();
+    // Verify not connected
     expect(service.isConnected()).toBeNull();
   });
 });
