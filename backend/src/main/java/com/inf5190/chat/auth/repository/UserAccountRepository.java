@@ -11,25 +11,26 @@ import com.google.firebase.cloud.FirestoreClient;
 
 @Repository
 public class UserAccountRepository {
-
     private static final String COLLECTION_NAME = "userAccounts";
-    private final Firestore firestore = FirestoreClient.getFirestore();
+    private final Firestore firestore;
 
-    public FirestoreUserAccount getUserAccount(String username) throws
-            InterruptedException, ExecutionException {
+    public UserAccountRepository(Firestore firestore) {
+        this.firestore = firestore;
+    }
+
+    public FirestoreUserAccount getUserAccount(String username) throws InterruptedException, ExecutionException {
         DocumentReference docRef = firestore.collection(COLLECTION_NAME).document(username);
         DocumentSnapshot documentSnapshot = docRef.get().get();
-
+        
         if (!documentSnapshot.exists()) {
             return null;
         }
         return documentSnapshot.toObject(FirestoreUserAccount.class);
     }
 
-    public void createUserAccount(FirestoreUserAccount userAccount) throws
-            InterruptedException, ExecutionException {
+    public void createUserAccount(FirestoreUserAccount userAccount) throws InterruptedException, ExecutionException {
         DocumentReference docRef = firestore.collection(COLLECTION_NAME).document(userAccount.getUsername());
         docRef.set(userAccount).get();
-        System.out.println("Compte crée avec succès");
     }
 }
+
