@@ -29,50 +29,49 @@ import io.jsonwebtoken.io.Decoders;
  */
 @Repository
 public class MessageRepository {
-
     private static final String COLLECTION_NAME = "messages";
     private static final String BUCKET_NAME = "YOUR_BUCKET_NAME";
     private static final int DEFAULT_LIMIT = 20;
 
-    private final Firestore firestore = FirestoreClient.getFirestore();
+    private final Firestore firestore;
+    private final StorageClient storageClient;
 
-    public List<Message> getMessages(String fromId)
-            throws InterruptedException, ExecutionException {
+    public MessageRepository(Firestore firestore, StorageClient storageClient) {
+        this.firestore = firestore;
+        this.storageClient = storageClient;
+    }
+
+    public List<Message> getMessages(String fromId) throws InterruptedException, ExecutionException {
         Query messageQuery = this.firestore.collection(COLLECTION_NAME).orderBy("timestamp");
 
         if (fromId != null) {
-            DocumentSnapshot fromIdDocument
-                    = this.firestore.collection(COLLECTION_NAME).document(fromId).get().get();
+            DocumentSnapshot fromIdDocument = this.firestore.collection(COLLECTION_NAME).document(fromId).get().get();
             if (!fromIdDocument.exists()) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Message with id " + fromId + " not found.");
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Message with id " + fromId + " not found.");
             }
             messageQuery = messageQuery.startAfter(fromIdDocument);
         } else {
             messageQuery = messageQuery.limitToLast(DEFAULT_LIMIT);
         }
 
-        return messageQuery.get().get().toObjects(FirestoreMessage.class).stream().map(message -> {
-            return this.toMessage(message.getId(), message);
-        }).toList();
+        return messageQuery.get().get().toObjects(FirestoreMessage.class).stream()
+                .map(message -> this.toMessage(message.getId(), message))
+                .toList();
     }
 
-    public Message createMessage(NewMessageRequest message)
-            throws InterruptedException, ExecutionException {
+    public Message createMessage(NewMessageRequest message) throws InterruptedException, ExecutionException {
         DocumentReference ref = this.firestore.collection(COLLECTION_NAME).document();
 
         String imageUrl = null;
         if (message.imageData() != null) {
-            Bucket b = StorageClient.getInstance().bucket(BUCKET_NAME);
+            Bucket b = storageClient.bucket(BUCKET_NAME);
             String path = String.format("images/%s.%s", ref.getId(), message.imageData().type());
             b.create(path, Decoders.BASE64.decode(message.imageData().data()),
                     BlobTargetOption.predefinedAcl(PredefinedAcl.PUBLIC_READ));
             imageUrl = String.format("https://storage.googleapis.com/%s/%s", BUCKET_NAME, path);
         }
 
-        FirestoreMessage firestoreMessage
-                = new FirestoreMessage(message.username(), Timestamp.now(), message.text(), imageUrl);
-
+        FirestoreMessage firestoreMessage = new FirestoreMessage(message.username(), Timestamp.now(), message.text(), imageUrl);
         ref.create(firestoreMessage).get();
         return this.toMessage(ref.getId(), firestoreMessage);
     }
@@ -83,3 +82,4 @@ public class MessageRepository {
                 firestoreMessage.getImageUrl());
     }
 }
+
