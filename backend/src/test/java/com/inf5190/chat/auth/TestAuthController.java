@@ -20,7 +20,7 @@ import com.inf5190.chat.auth.repository.FirestoreUserAccount;
 import com.inf5190.chat.auth.repository.UserAccountRepository;
 import com.inf5190.chat.auth.session.SessionData;
 import com.inf5190.chat.auth.session.SessionManager;
-import com.inf5190.chat.auth.session.AuthController;
+import com.inf5190.chat.auth.AuthController;
 
 public class TestAuthController {
   private final String username = "testuser";
@@ -43,7 +43,7 @@ public class TestAuthController {
   public void setup(){
     MockitoAnnotations.openMocks(this);
     this.authController = new AuthController(mockSessionManager, mockAccountRepository, mockPasswordEncoder);
-
+  }
     @Test
     public void testPremierLogin() throws Exception {
         when(mockAccountRepository.getUserAccount(username)).thenReturn(null);
@@ -89,4 +89,4 @@ public class TestAuthController {
             .hasFieldOrPropertyWithValue("status", HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-}
+
