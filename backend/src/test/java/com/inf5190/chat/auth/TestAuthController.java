@@ -2,12 +2,12 @@ package com.inf5190.chat.auth;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.any;
 import org.mockito.Mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,30 +20,31 @@ import com.inf5190.chat.auth.repository.FirestoreUserAccount;
 import com.inf5190.chat.auth.repository.UserAccountRepository;
 import com.inf5190.chat.auth.session.SessionData;
 import com.inf5190.chat.auth.session.SessionManager;
-import com.inf5190.chat.auth.AuthController;
 
 public class TestAuthController {
-  private final String username = "testuser";
-  private final String password = "testpass";
-  private final String encodedPassword = "encodedpass";
-  private final LoginRequest loginRequest = new LoginRequest(username, password);
-  private final FirestoreUserAccount userAccount = new FirestoreUserAccount(username, encodedPassword);
 
-  @Mock
-  private SessionManager mockSessionManager;
+    private final String username = "testuser";
+    private final String password = "testpass";
+    private final String encodedPassword = "encodedpass";
+    private final LoginRequest loginRequest = new LoginRequest(username, password);
+    private final FirestoreUserAccount userAccount = new FirestoreUserAccount(username, encodedPassword);
 
-  @Mock
-  private UserAccountRepository mockAccountRepository;
+    @Mock
+    private SessionManager mockSessionManager;
 
-  @Mock
-  private PasswordEncoder mockPasswordEncoder;
-  private AuthController authController;
+    @Mock
+    private UserAccountRepository mockAccountRepository;
 
-  @BeforeEach
-  public void setup(){
-    MockitoAnnotations.openMocks(this);
-    this.authController = new AuthController(mockSessionManager, mockAccountRepository, mockPasswordEncoder);
-  }
+    @Mock
+    private PasswordEncoder mockPasswordEncoder;
+    private AuthController authController;
+
+    @BeforeEach
+    public void setup() {
+        MockitoAnnotations.openMocks(this);
+        this.authController = new AuthController(mockSessionManager, mockAccountRepository, mockPasswordEncoder);
+    }
+
     @Test
     public void testPremierLogin() throws Exception {
         when(mockAccountRepository.getUserAccount(username)).thenReturn(null);
@@ -75,18 +76,17 @@ public class TestAuthController {
         when(mockPasswordEncoder.matches(password, encodedPassword)).thenReturn(false);
 
         assertThatThrownBy(() -> authController.login(loginRequest))
-            .isInstanceOf(ResponseStatusException.class)
-            .hasFieldOrPropertyWithValue("status", HttpStatus.FORBIDDEN);
+                .isInstanceOf(ResponseStatusException.class)
+                .hasFieldOrPropertyWithValue("status", HttpStatus.FORBIDDEN);
     }
 
     @Test
     public void testLoginFirestoreError() throws Exception {
         when(mockAccountRepository.getUserAccount(username))
-            .thenThrow(new InterruptedException("Firestore error"));
+                .thenThrow(new InterruptedException("Firestore error"));
 
         assertThatThrownBy(() -> authController.login(loginRequest))
-            .isInstanceOf(ResponseStatusException.class)
-            .hasFieldOrPropertyWithValue("status", HttpStatus.INTERNAL_SERVER_ERROR);
+                .isInstanceOf(ResponseStatusException.class)
+                .hasFieldOrPropertyWithValue("status", HttpStatus.INTERNAL_SERVER_ERROR);
     }
-  }
-
+}

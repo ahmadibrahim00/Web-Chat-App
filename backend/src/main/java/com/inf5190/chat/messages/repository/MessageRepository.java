@@ -15,7 +15,6 @@ import com.google.cloud.firestore.Query;
 import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.Bucket.BlobTargetOption;
 import com.google.cloud.storage.Storage.PredefinedAcl;
-import com.google.firebase.cloud.FirestoreClient;
 import com.google.firebase.cloud.StorageClient;
 import com.inf5190.chat.messages.model.Message;
 import com.inf5190.chat.messages.model.NewMessageRequest;
@@ -29,6 +28,7 @@ import io.jsonwebtoken.io.Decoders;
  */
 @Repository
 public class MessageRepository {
+
     private static final String COLLECTION_NAME = "messages";
     private static final String BUCKET_NAME = "YOUR_BUCKET_NAME";
     private static final int DEFAULT_LIMIT = 20;
@@ -82,4 +82,3 @@ public class MessageRepository {
                 firestoreMessage.getImageUrl());
     }
 }
-
