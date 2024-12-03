@@ -30,7 +30,7 @@ import io.jsonwebtoken.io.Decoders;
 public class MessageRepository {
 
     private static final String COLLECTION_NAME = "messages";
-    private static final String BUCKET_NAME = "YOUR_BUCKET_NAME";
+    private static final String BUCKET_NAME = "inf5190-chat-prod-d26dc.firebasestorage.app";
     private static final int DEFAULT_LIMIT = 20;
 
     private final Firestore firestore;
