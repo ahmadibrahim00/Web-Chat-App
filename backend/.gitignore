@@ -41,6 +41,7 @@ build/
 **/.firebaserc
 firestore-debug.log
 firebase-key.json
+firebase-production-key.json
 
 ### Firebase Patch ###
 .runtimeconfig.json
