@@ -40,8 +40,10 @@ build/
 **/node_modules/*
 **/.firebaserc
 firestore-debug.log
-
+firebase-key.json
 
 ### Firebase Patch ###
 .runtimeconfig.json
 .firebase/
+
+
