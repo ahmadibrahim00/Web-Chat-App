@@ -7,7 +7,7 @@ plugins {
 
 jib {
     to {
-        image = "northamerica-northeast1-docker.pkg.dev/YOUR_PROJECT_ID/inf-5190/chat-app"
+        image = "northamerica-northeast1-docker.pkg.dev/inf5190-chat-prod-gabriel/inf-5190/chat-app"
         auth {
             username = "_json_key"
             password = file("firebase-production-key.json").readText(Charsets.UTF_8)
