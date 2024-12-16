@@ -1,4 +1,4 @@
 export const environment = {
-  backendURL: 'http://localhost:8080',
-  wsURL: 'ws://localhost:8080',
+  backendURL: 'https://chat-app-821746667252.northamerica-northeast1.run.app',
+  wsURL: 'wss://chat-app-821746667252.northamerica-northeast1.run.app',
 };

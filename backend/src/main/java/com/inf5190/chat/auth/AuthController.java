@@ -68,6 +68,8 @@ public class AuthController {
             ResponseCookie cookie = ResponseCookie.from("sid", sessionId)
                     .httpOnly(true)
                     .path("/")
+                    .sameSite("None")
+                    .secure(true)
                     .maxAge(24 * 60 * 60) // 24 heures en secondes
                     .build();
 
@@ -89,8 +91,9 @@ public class AuthController {
             ResponseCookie deleteCookie = ResponseCookie.from("sid", "")
                     .httpOnly(true)
                     .path("/")
+                    .sameSite("None")
+                    .secure(true)
                     .maxAge(0) // Supresseion du cookie
-                    .httpOnly(true)
                     .build();
 
             return ResponseEntity.ok()

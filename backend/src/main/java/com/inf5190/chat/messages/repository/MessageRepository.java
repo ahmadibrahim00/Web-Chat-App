@@ -3,6 +3,8 @@ package com.inf5190.chat.messages.repository;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.server.ResponseStatusException;
@@ -30,11 +32,14 @@ import io.jsonwebtoken.io.Decoders;
 public class MessageRepository {
 
     private static final String COLLECTION_NAME = "messages";
-    private static final String BUCKET_NAME = "YOUR_BUCKET_NAME";
     private static final int DEFAULT_LIMIT = 20;
 
     private final Firestore firestore;
     private final StorageClient storageClient;
+
+    @Autowired
+    @Qualifier("storageBucketName")
+    private String storageBucketName;
 
     public MessageRepository(Firestore firestore, StorageClient storageClient) {
         this.firestore = firestore;
@@ -64,11 +69,11 @@ public class MessageRepository {
 
         String imageUrl = null;
         if (message.imageData() != null) {
-            Bucket b = storageClient.bucket(BUCKET_NAME);
+            Bucket b = storageClient.bucket(storageBucketName);
             String path = String.format("images/%s.%s", ref.getId(), message.imageData().type());
             b.create(path, Decoders.BASE64.decode(message.imageData().data()),
                     BlobTargetOption.predefinedAcl(PredefinedAcl.PUBLIC_READ));
-            imageUrl = String.format("https://storage.googleapis.com/%s/%s", BUCKET_NAME, path);
+            imageUrl = String.format("https://storage.googleapis.com/%s/%s", storageBucketName, path);
         }
 
         FirestoreMessage firestoreMessage = new FirestoreMessage(message.username(), Timestamp.now(), message.text(), imageUrl);
