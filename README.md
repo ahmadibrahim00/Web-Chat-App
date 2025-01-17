@@ -6,7 +6,7 @@
 
 ## 🎯 Project Objective
 
-Build a web-based messaging application featuring an interactive frontend, a robust backend, and advanced functionalities such as:
+Build a web-based messaging application featuring an interactive frontend, a complete backend, and advanced functionalities such as:
 
 - User authentication and management with security (JWT, Firestore).
 - Real-time messaging with WebSocket.
